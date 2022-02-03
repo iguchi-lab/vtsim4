@@ -48,18 +48,16 @@ AC_STOP:    int = vt.AC_STOP
 ###############################################################################
 # define lambda
 ###############################################################################
+read_csv = lambda fn:   pd.read_csv(fn, index_col = 0, parse_dates = True).fillna(method = 'bfill')\
+                                                                          .fillna(method = 'ffill')     #csvファイルの読み込み
 
-read_csv = lambda fn:                       pd.read_csv(fn, index_col = 0, 
-                                                        parse_dates = True).fillna(method = 'bfill')\
-                                                                           .fillna(method = 'ffill')     #csvファイルの読み込み
+index = lambda df:     df.index.strftime('%Y/%m/%d %H:%m:%S').to_list()
 
-index = lambda idx:                         idx.strftime('%Y/%m/%d %H:%m:%S').to_list()
-
-ix   = lambda length:                       pd.date_range(datetime(2021, 1, 1, 0, 0, 0), 
-                                                          datetime(2021, 1, 1, 0, 0, 0) + timedelta(seconds = length), 
-                                                          freq='1s')                                    #長さlength、1s毎の時刻
+df   = lambda length:   pd.DataFrame(index = pd.date_range(datetime(2021, 1, 1, 0, 0, 0), 
+                                     datetime(2021, 1, 1, 0, 0, 0) + timedelta(seconds = length), 
+                                     freq='1s'))                                                        #長さlength、1s毎の時刻
                                                           
-d_node  = lambda name:                      name + '_c'                                                 #遅延ノードの名前作成
+d_node  = lambda name:  name + '_c'                                                                     #遅延ノードの名前作成
 
 calc = vt.VTSim()
 
@@ -73,7 +71,6 @@ df_qt2 = pd.DataFrame()
 ###############################################################################
 # define function
 ###############################################################################
-
 def to_list_f(v):
     if   type(v) == list:                   return(v)
     elif type(v) == np.ndarray:             return(v)
