@@ -229,7 +229,7 @@ def output_calc(ix, opt, res, sn_c, vn_c, tn_c):
                  {'df': pd.DataFrame(), 'columns': tn_c, 'fn': 'thrm_qt2.csv', 'title': '熱量2', 'unit': '[W]'}]
     
     for i, d in enumerate(dat_list):
-        if len(res[i]) != 0: d['df'] = pd.DataFrame(np.array(res[i]).T,  index = ix, columns = d['columns'])
+        if len(res[i]) != 0: d['df'] = pd.DataFrame(np.array(res[i]).T,  index = ix, columns = d['columns'], parse_dates = True)
 
     if opt >= OPT_CSV:
         print('Output csv files.')
