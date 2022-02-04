@@ -33,3 +33,15 @@ class fan_spec:
         p1   = df.replace(p1_d).to_list()
         
         return({'qmax': qmax, 'pmax': pmax, 'q1': q1, 'p1': p1})
+
+fs  = fan_spec()
+
+fs.set_spec(YCC_L,  100 / 3600, 110.0, 100 / 3600,  95.0)
+fs.set_spec(YCC_M,  200 / 3600, 110.0, 200 / 3600,  80.0)
+fs.set_spec(YCC_H,  390 / 3600, 110.0, 200 / 3600,  80.0)
+
+fs.set_spec(RARA0,  100 / 3600,  10.0,   0 / 3600, 10.0)
+fs.set_spec(RARA1,  150 / 3600,  80.0,   0 / 3600, 80.0)
+fs.set_spec(RARA2,  210 / 3600, 120.0,   0 / 3600, 120.0)
+
+fs.set_spec(SUMIKA, 200 / 3600, 100.0, 200 / 3600, 100.0)
