@@ -51,7 +51,7 @@ AC_STOP:    int = vt.AC_STOP
 read_csv = lambda fn:   pd.read_csv(fn, index_col = 0, parse_dates = True).fillna(method = 'bfill')\
                                                                           .fillna(method = 'ffill')     #csvファイルの読み込み
 
-index = lambda df:     df.index.strftime('%Y/%m/%d %H:%m:%S').to_list()
+index = lambda df:     df.index.strftime('%Y/%m/%d %H:%M:%S').to_list()
 data  = lambda df:     df.to_list()
 
 df   = lambda length:   pd.DataFrame(index = pd.date_range(datetime(2021, 1, 1, 0, 0, 0), 
