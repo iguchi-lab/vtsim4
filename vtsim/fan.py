@@ -32,7 +32,7 @@ class fan_spec:
         q1   = df.replace(q1_d).to_list()
         p1   = df.replace(p1_d).to_list()
         
-        return({'qmax': qmax, 'pmax': pmax, 'q1': q1, 'p1': p1})
+        return {'qmax': qmax, 'pmax': pmax, 'q1': q1, 'p1': p1}
 
 fs  = fan_spec()
 
