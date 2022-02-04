@@ -27,11 +27,6 @@ class fan_spec:
             pmax_d[k] = self.pmax[dic[k]]
             q1_d[k]   = self.q1[dic[k]]
             p1_d[k]   = self.p1[dic[k]]
-        
-        print(qmax_d)
-        print(pmax_d)
-        print(q1_d)
-        print(p1_d)
 
         qmax = df.replace(qmax_d).to_list()
         pmax = df.replace(pmax_d).to_list()
