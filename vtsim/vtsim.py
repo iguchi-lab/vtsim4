@@ -153,10 +153,10 @@ def set_calc_status(input):
 def add_capa(input):
     if 'tn' not in input:   input['tn'] = {}
     
-    for n in [n for n in input['sn'] if 'capa' in input['sn'][n]]:                              #熱容量の設定のあるノード
+    for n in [n for n in input['sn'] if 'capa' in n]:                                           #熱容量の設定のあるノード
         input['sn'][d_node(n)] = {}
         input['sn'][d_node(n)]['t_flag'] = vt.SN_DLY                                            #計算フラグ
-        input['sn'][d_node(n)]['s_i']    = input['sn'][n]                                       #親ノードの設定
+        input['sn'][d_node(n)]['s_i']    = n                                                    #親ノードの設定
         if 't' in input['sn'][n]:   input['sn'][d_node(n)]['t'] = input['sn'][n]['t']           #初期温度の継承
 
         input['tn'][n + ' -> ' + d_node(n)] = {}
@@ -181,7 +181,7 @@ def set_sim_node(sn):
         if 'v'     in sn[n]:    calc.sn[i].v     = to_list_f(sn[n]['v'])                    #気積、行列で設定可能
         if 'm'     in sn[n]:    calc.sn[i].m     = to_list_f(sn[n]['m'])                    #発生量、行列で設定可能
         if 'beta'  in sn[n]:    calc.sn[i].beta  = to_list_f(sn[n]['beta'])                 #濃度減少率、行列で設定可能
-        if 's_i'   in sn[n]:    calc.sn[i].s_i   = calc.node[n]
+        if 's_i'   in sn[n]:    calc.sn[i].s_i   = calc.node[sn[n]['s_i']]
 
 def set_vent_net(vn):
     for i, nt in enumerate(vn):
