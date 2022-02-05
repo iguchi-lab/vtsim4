@@ -84,7 +84,9 @@ def to_list_i(v):
     elif type(v) == pd.core.series.Series:  return(np.array(v))
     else:                                   return[int(v)] * calc.sts.length
 
-def run_calc(input):                                                     #はじめに呼び出される関数    
+def run_calc(inp):                                                     #はじめに呼び出される関数    
+    input = json.loads(inp)
+    
     print('Set calc status.')
     if 'index' in input:    set_calc_status(input)  
     else:                   raise Exception('ERROR: index does not exist!')
