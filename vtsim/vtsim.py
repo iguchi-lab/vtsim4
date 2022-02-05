@@ -85,12 +85,12 @@ def to_list_i(v):
     else:                                   return[int(v)] * calc.sts.length
 
 def run_calc(input):                                                     #はじめに呼び出される関数    
-    with open('calc.json', 'w') as f:
-        json.dump(input, f, ensure_ascii = False, indent = 4)
-
     print('Set calc status.')
     if 'index' in input:    set_calc_status(input)  
     else:                   raise Exception('ERROR: index does not exist!')
+
+    with open('calc.json', 'w') as f:
+        json.dump(input, f, ensure_ascii = False, indent = 4)
 
     print('Add Capacity')
     if 'sn' in input:       input = add_capa(input)
