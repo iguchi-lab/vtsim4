@@ -193,7 +193,11 @@ def set_vent_net(vn):
         vn_type = vn[nt]['type'] if 'type' in vn[nt] else vt.VN_FIX
 
         s = nt.replace(' ', '')
-        calc.vn_add(i, calc.node[s[:s.find('->')]], calc.node[s[s.find('->') + 2:]], vn_type, h1, h2)
+        if s.find('->') == -1:  raise Exception('ERROR: -> does not exist!')
+        if s.find(':')  == -1:  n1, n2 = s[:s.find('->')], s[s.find('->') + 2:]
+        else:                   n1, n2 = s[:s.find('->')], s[s.find('->') + 2: s.find(':')]
+
+        calc.vn_add(i, calc.node[n1], calc.node[n2], vn_type, h1, h2)
         
         if (vn_type == vt.VN_FIX) or (vn_type == vt.VN_AIRCON):       
             calc.vn[i].qv = to_list_f(vn[nt]['vol'])                                                #風量固定値、行列で設定可能
