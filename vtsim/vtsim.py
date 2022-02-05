@@ -89,12 +89,13 @@ def run_calc(input):                                                     #はじ
     if 'index' in input:    set_calc_status(input)  
     else:                   raise Exception('ERROR: index does not exist!')
 
-    with open('calc.json', 'w') as f:
-        json.dump(input, f, ensure_ascii = False, indent = 4)
-
     print('Add Capacity')
     if 'sn' in input:       input = add_capa(input)
     else:                   raise Exception('ERROR: sn does not exist!')
+
+    with open('calc.json', 'w') as f:
+        json.dump(input, f, ensure_ascii = False, indent = 4)
+
 
     print('Set SimNode.')
     if 'sn' in input:       set_sim_node(input['sn'])
