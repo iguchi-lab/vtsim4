@@ -6,7 +6,7 @@
 #include <iostream>
 #include <fstream>
 
-//#define DEBUG_ON
+#define DEBUG_ON
 
 #ifdef  DEBUG_ON
 #define LOG_PRINT(...)     ofs << __FILE__ << " (" << __LINE__ << ") " << __func__ << ":" << __VA_ARGS__
