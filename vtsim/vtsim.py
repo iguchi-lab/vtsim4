@@ -151,7 +151,7 @@ def set_calc_status(input):
     calc.setup(sts)
 
 def add_capa(input):
-    if 'tn' in input:   input['tn'] = {}
+    if 'tn' not in input:   input['tn'] = {}
     
     for n in [n for n in input['sn'] if 'capa' in input['sn'][n]]:                              #熱容量の設定のあるノード
         input['sn'][d_node(n)] = {}
