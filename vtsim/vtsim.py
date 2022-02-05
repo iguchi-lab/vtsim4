@@ -153,7 +153,7 @@ def set_calc_status(input):
 def add_capa(input):
     if 'tn' not in input:   input['tn'] = {}
     
-    for n in [n for n in input['sn'] if 'capa' in n]:                                           #熱容量の設定のあるノード
+    for n in [n for n in input['sn'] if 'capa' in input['sn'][n]]:                              #熱容量の設定のあるノード
         input['sn'][d_node(n)] = {}
         input['sn'][d_node(n)]['t_flag'] = vt.SN_DLY                                            #計算フラグ
         input['sn'][d_node(n)]['s_i']    = n                                                    #親ノードの設定
