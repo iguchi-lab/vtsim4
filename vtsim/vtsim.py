@@ -90,11 +90,15 @@ def run_calc(input):                                                     #はじ
 
     print('Set calc status.')
     if 'index' in input:    set_calc_status(input)  
-    else:                   print("ERROR: index does not exist!")
+    else:                   raise Exception('ERROR: index does not exist!')
+
+    print('Add Capacity')
+    if 'sn' in input:       input = add_capa(input)
+    else:                   raise Exception('ERROR: sn does not exist!')
 
     print('Set SimNode.')
     if 'sn' in input:       set_sim_node(input['sn'])
-    else:                   print("ERROR: sn does not exist!")
+    else:                   raise Exception('ERROR: sn does not exist!')
 
     print('Set VentNet.')
     if 'vn' in input:       set_vent_net(input['vn'])
@@ -146,15 +150,22 @@ def set_calc_status(input):
 
     calc.setup(sts)
 
+def add_capa(input):
+    if 'tn' in input:   input['tn'] = {}
+    
+    for n in [n for n in input['sn'] if 'capa' in input['sn'][n]]:                              #熱容量の設定のあるノード
+        input['sn'][d_node(n)] = {}
+        input['sn'][d_node(n)]['t_flag'] = vt.SN_DLY                                            #計算フラグ
+        input['sn'][d_node(n)]['s_i']    = input['sn'][n]                                       #親ノードの設定
+        if 't' in input['sn'][n]:   input['sn'][d_node(n)]['t'] = input['sn'][n]['t']           #初期温度の継承
+
+        input['tn'][n + ' -> ' + d_node(n)] = {}
+        input['tn'][n + ' -> ' + d_node(n)]['type'] = vt.TN_SIMPLE                              #熱容量の設定
+        input['tn'][n + ' -> ' + d_node(n)]['cdtc'] = input['sn'][n]['capa'] / calc.sts.t_step  #コンダクタンス（熱容量）     
+
+    return input
+
 def set_sim_node(sn):
-    for i, n in enumerate([n for n in sn if 'capa' in sn[n]]):                #熱容量の設定のあるノード
-        sn[d_node(n)]['t_flag'] = vt.SN_DLY                                            #計算フラグ
-        sn[d_node(n)]['s_i']    = input['sn'][n]
-        if 't' in sn[n]:   sn[d_node(n)]['t'] = sn[n]['t']           #初期温度の継承
-
-        input['tn'][n + ' -> ' + d_node(n)]['type'] = vt.TN_SIMPLE                                 #熱容量の設定
-        input['tn'][n + ' -> ' + d_node(n)]['cdtc'] = sn[n]['capa'] / calc.sts.t_step     #コンダクタンス（熱容量）      
-
     for i, n in enumerate(sn):
         calc.set_node(n, i)
         v_flag = sn[n]['v_flag'] if 'v_flag' in sn[n] else vt.SN_NONE
