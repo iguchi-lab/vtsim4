@@ -221,9 +221,11 @@ def set_vent_net(vn):
 
         calc.vn_add(i, calc.node[n1], calc.node[n2], vn_type, h1, h2)
         
-        if (vn_type == vt.VN_FIX) or (vn_type == vt.VN_AIRCON):       
+        if vn_type == vt.VN_FIX:       
             calc.vn[i].qv = to_list_f(vn[nt]['vol'])                                                #風量固定値、行列で設定可能
-        if vn_type == vt.VN_SIMPLE:    
+        if vn_type == vt.VN_AIRCON:
+            calc.vn[i].qv = to_list_f(vn[nt]['ac-vol'])                                             #風量固定値、行列で設定可能
+        if vn_type == vt.VN_SIMPLE:                                                                 
             calc.vn[i].alpha = to_list_f(vn[nt]['alpha'])
             calc.vn[i].area  = to_list_f(vn[nt]['area'])                                            #単純開口、行列で設定可能
         if vn_type == vt.VN_GAP:           
