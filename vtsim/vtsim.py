@@ -103,33 +103,33 @@ def to_list_i(v):
     elif type(v) == pd.core.series.Series:  return(np.array(v))
     else:                                   return[int(v)] * calc.sts.length
 
-def run_calc(input):                                                     #はじめに呼び出される関数    
-    if   type(input) == dict: input = to_json(input)
-    elif type(input) != str: raise Exception('ERROR: input must be dict or json!')
+def run_calc(input):                                                                    #はじめに呼び出される関数    
+    if   type(input) == dict: input = to_json(input)                                    #辞書型であれば、JSON形式に変換
+    elif type(input) != str: raise Exception('ERROR: input must be dict or json!')      #文字列（JSON形式)で無ければエラー
     
-    input = json.loads(input)
+    input = json.loads(input)                                                           #JSON形式を辞書型に変換
 
     print('Set calc status.')
-    if 'index' in input:    set_calc_status(input)  
-    else:                   raise Exception('ERROR: index does not exist!')
+    if 'index' in input:    set_calc_status(input)                                      #計算条件を設定
+    else:                   raise Exception('ERROR: index does not exist!')             #indexが無ければエラー
 
-    print('Add Capacity')
-    if 'sn' in input:       input = add_capa(input)
-    else:                   raise Exception('ERROR: sn does not exist!')
+    print('Add Capacity')   
+    if 'sn' in input:       input = add_capa(input)                                     #熱容量を設定
+    else:                   raise Exception('ERROR: sn does not exist!')                #sn（ノード）が無ければエラー
 
-    with open('calc.json', 'w') as f:
+    with open('calc.json', 'w') as f:                                                   #計算入力を　calc.jsonに格納
         json.dump(input, f, ensure_ascii = False, indent = 4)
 
 
     print('Set SimNode.')
-    if 'sn' in input:       set_sim_node(input['sn'])
-    else:                   raise Exception('ERROR: sn does not exist!')
+    if 'sn' in input:       set_sim_node(input['sn'])                                   #sn（ノード）の設定
+    else:                   raise Exception('ERROR: sn does not exist!')                #sn（ノード）が無ければエラー
 
     print('Set VentNet.')
-    if 'vn' in input:       set_vent_net(input['vn'])
+    if 'vn' in input:       set_vent_net(input['vn'])                                   #vn（換気回路網）の設定
 
     print('Set ThrmNet.')
-    if 'tn' in input:       set_thrm_net(input['tn'])
+    if 'tn' in input:       set_thrm_net(input['tn'])                                   #tn（熱回路網）の設定
 
     print('ready')
     print('sts     ', calc.sts)
@@ -145,7 +145,7 @@ def run_calc(input):                                                     #はじ
 
     print('Start vtsim calc.')
     s_time = time.time()
-    calc.calc()
+    calc.calc()                                                                         #計算
     e_time = time.time() - s_time    
     print('Finish vtsim calc.')
     print("calc time = {0}".format(e_time * 1000) + "[ms]")
