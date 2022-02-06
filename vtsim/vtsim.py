@@ -204,6 +204,17 @@ def set_sim_node(sn):
         if 'beta'  in sn[n]:    calc.sn[i].beta  = to_list_f(sn[n]['beta'])                 #濃度減少率、行列で設定可能
         if 's_i'   in sn[n]:    calc.sn[i].s_i   = calc.node[sn[n]['s_i']]
 
+def get_n1n2(nt):  
+    s = nt.replace(' ', '')
+    if s.find('->') == -1:  raise Exception('ERROR: -> does not exist!')
+    if s.find(':')  == -1:  n1, n2 = s[:s.find('->')], s[s.find('->') + 2:]
+    else:                   n1, n2 = s[:s.find('->')], s[s.find('->') + 2: s.find(':')]
+
+    if n1 not in calc.node: raise Exception('ERROR: ' + n1 + ' does not exist in nodes(sn)!')
+    if n2 not in calc.node: raise Exception('ERROR: ' + n2 + ' does not exist in nodes(sn)!')
+
+    return n1, n2
+
 def set_vent_net(vn):
     for i, nt in enumerate(vn):
         
@@ -220,14 +231,7 @@ def set_vent_net(vn):
         h1 = to_list_f(vn[nt]['h1']) if 'h1' in vn[nt] else to_list_f(0.0)                          #高さ1、行列設定不可
         h2 = to_list_f(vn[nt]['h2']) if 'h2' in vn[nt] else to_list_f(0.0)                          #高さ2、行列設定不可
         
-        s = nt.replace(' ', '')
-        if s.find('->') == -1:  raise Exception('ERROR: -> does not exist!')
-        if s.find(':')  == -1:  n1, n2 = s[:s.find('->')], s[s.find('->') + 2:]
-        else:                   n1, n2 = s[:s.find('->')], s[s.find('->') + 2: s.find(':')]
-
-        if n1 not in calc.node: raise Exception('ERROR: ' + n1 + ' does not exist in nodes(sn)!')
-        if n2 not in calc.node: raise Exception('ERROR: ' + n2 + ' does not exist in nodes(sn)!')
-
+        n1, n2 = get_n1n2(nt)
         calc.vn_add(i, calc.node[n1], calc.node[n2], vn_type, h1, h2)
         
         if vn_type == vt.VN_FIX:       
@@ -261,8 +265,8 @@ def set_thrm_net(tn):
         else:
             tn_type = tn[nt]['type']
 
-        s = nt.replace(' ', '')
-        calc.tn_add(i, calc.node[s[:s.find('->')]], calc.node[s[s.find('->') + 2:]], tn_type)
+        n1, n2 = get_n1n2(nt)
+        calc.tn_add(i, calc.node[n1], calc.node[n2], tn_type)
 
         if tn_type == vt.TN_SIMPLE:     
             calc.tn[i].cdtc = to_list_f(tn[nt]['cdtc'])                                #コンダクタンス、行列設定可能
