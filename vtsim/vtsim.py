@@ -205,7 +205,8 @@ def set_vent_net(vn):
             if   ('alpha' in vn[nt]) and ('area' in vn[nt]):  vn_type = vt.VN_SIMPLE
             elif ('a'     in vn[nt]) and ('n'    in vn[nt]):  vn_type = vt.VN_GAP
             elif ('qmax'  in vn[nt]) and ('pmax' in vn[nt]):  vn_type = vt.VN_FAN
-            else:                                             vn_type = vt.VN_FIX
+            elif  'vol'   in vn[nt]:                          vn_type = vt.VN_FIX
+            else:                                             raise Exception('ERROR: vn_type dose not exist! ' & nt)    
         else:
             vn_type = vn[nt]['type']
 
@@ -238,7 +239,16 @@ def set_vent_net(vn):
 
 def set_thrm_net(tn):
     for i, nt in enumerate(tn):
-        tn_type = tn[nt]['type'] if 'type' in tn[nt] else vt.TN_SIMPLE
+        #tn_type = tn[nt]['type'] if 'type' in tn[nt] else vt.TN_SIMPLE
+
+        if 'type' not in tn[nt]:
+            if    'ms'       in tn[nt]:                            tn_type = vt.TN_SOLAR
+            elif ('phi_0'    in tn[nt]) and ('cof_r'   in tn[nt]): tn_type = vt.TN_GROUND
+            elif ('ac_mode'  in tn[nt]) and ('pre_tmp' in tn[nt]): tn_type = vt.TN_AIRCON
+            elif  'cdtc'     in tn[nt]:                            tn_type = vt.TN_SIMPLE
+            else:                                                  raise Exception('ERROR: tn_type dose not exist! ' & nt) 
+        else:
+            tn_type = tn[nt]['type']
 
         s = nt.replace(' ', '')
         calc.tn_add(i, calc.node[s[:s.find('->')]], calc.node[s[s.find('->') + 2:]], tn_type)
