@@ -68,10 +68,10 @@ def encode(object):
 
 def write_json(input, f):
     with open('tutorial_ibec.json', 'w') as f:
-        json.dump(input, f, default = vt.encode, ensure_ascii = False, indent = 4)
+        json.dump(input, f, default = encode, ensure_ascii = False, indent = 4)
 
 def to_json(input):
-    return(json.dumps(input, default = vt.encode, ensure_ascii = False, indent = 4))
+    return(json.dumps(input, default = encode, ensure_ascii = False, indent = 4))
 
 df_p   = pd.DataFrame()
 df_c   = pd.DataFrame()
