@@ -67,10 +67,12 @@ def encode(object):
     if isinstance(object, pd.core.series.Series):                   return(object.to_list())
 
 def write_json(input, fn):
+    input['version': '4.0.0']
     with open(fn, 'w') as f:
         json.dump(input, f, default = encode, ensure_ascii = False, indent = 4)
 
 def to_json(input):
+    input['version': '4.0.0']
     return(json.dumps(input, default = encode, ensure_ascii = False, indent = 4))
 
 df_p   = pd.DataFrame()
