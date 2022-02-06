@@ -210,8 +210,8 @@ def get_n1n2(nt):
     if s.find(':')  == -1:  n1, n2 = s[:s.find('->')], s[s.find('->') + 2:]
     else:                   n1, n2 = s[:s.find('->')], s[s.find('->') + 2: s.find(':')]
 
-    if n1 not in calc.node: raise Exception('ERROR: ' + n1 + ' does not exist in nodes(sn)!')
-    if n2 not in calc.node: raise Exception('ERROR: ' + n2 + ' does not exist in nodes(sn)!')
+    if n1 not in calc.node: raise Exception('ERROR: 設定されたノードの中に ' + n1 + ' がありません。')
+    if n2 not in calc.node: raise Exception('ERROR: 設定されたノードの中に ' + n2 + ' がありません。')
 
     return n1, n2
 
