@@ -206,7 +206,7 @@ def set_vent_net(vn):
             elif ('a'     in vn[nt]) and ('n'    in vn[nt]):  vn_type = vt.VN_GAP
             elif ('qmax'  in vn[nt]) and ('pmax' in vn[nt]):  vn_type = vt.VN_FAN
             elif  'vol'   in vn[nt]:                          vn_type = vt.VN_FIX
-            else:                                             raise Exception('ERROR: vn_type dose not exist! ' & nt)    
+            else:                                             raise Exception('ERROR: vn_type dose not exist! ' + nt)    
         else:
             vn_type = vn[nt]['type']
 
@@ -246,7 +246,7 @@ def set_thrm_net(tn):
             elif ('phi_0'    in tn[nt]) and ('cof_r'   in tn[nt]): tn_type = vt.TN_GROUND
             elif ('ac_mode'  in tn[nt]) and ('pre_tmp' in tn[nt]): tn_type = vt.TN_AIRCON
             elif  'cdtc'     in tn[nt]:                            tn_type = vt.TN_SIMPLE
-            else:                                                  raise Exception('ERROR: tn_type dose not exist! ' & nt) 
+            else:                                                  raise Exception('ERROR: tn_type dose not exist! ' + nt) 
         else:
             tn_type = tn[nt]['type']
 
