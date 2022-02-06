@@ -62,6 +62,10 @@ d_node  = lambda name:  name + '_c'                                             
 
 calc = vt.VTSim()
 
+def encode(object):
+    if isinstance(object, pd.core.indexes.datetimes.DatetimeIndex): return(object.strftime('%Y/%m/%d %H:%M:%S').to_list())
+    if isinstance(object, pd.core.series.Series):                   return(object.to_list())
+
 df_p   = pd.DataFrame()
 df_c   = pd.DataFrame()
 df_t   = pd.DataFrame()
