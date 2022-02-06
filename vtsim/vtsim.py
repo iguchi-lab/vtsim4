@@ -104,8 +104,10 @@ def to_list_i(v):
     else:                                   return[int(v)] * calc.sts.length
 
 def run_calc(input):                                                     #はじめに呼び出される関数    
-    if   type(input) == Str:  input = json.loads(input)
-    elif type(input) != dict: raise Exception('ERROR: input must be dict or json!')
+    if   type(input) == dict: input = to_json(input)
+    elif type(input) != str: raise Exception('ERROR: input must be dict or json!')
+    
+    input = json.loads(input)
 
     print('Set calc status.')
     if 'index' in input:    set_calc_status(input)  
