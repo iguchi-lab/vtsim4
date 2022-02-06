@@ -1,0 +1,64 @@
+{
+    "index": [
+        "2021/01/01 00:00:00",
+        "2021/01/01 00:00:01"
+    ],
+    "sn": {
+        "AC-out": {
+            "t_flag": 1
+        },
+        "Room1": {
+            "t_flag": 1
+        },
+        "Room2": {
+            "t_flag": 1
+        },
+        "AC-in": {
+            "t_flag": 2,
+            "t": 20.0
+        },
+        "Outside": {
+            "t_flag": 2,
+            "t": 0.0
+        },
+        "solar": {
+            "h_sr": 400
+        },
+        "h_inp": {
+            "h_inp": 2000
+        }
+    },
+    "vn": {
+        "AC-in -> AC-out": {
+            "ac-vol": 0.2777777777777778
+        },
+        "AC-out -> Room1": {
+            "vol": 0.1388888888888889
+        },
+        "AC-out -> Room2": {
+            "vol": 0.1388888888888889
+        },
+        "Room1 -> AC-in": {
+            "vol": 0.1388888888888889
+        },
+        "Room2 -> AC-in": {
+            "vol": 0.1388888888888889
+        }
+    },
+    "tn": {
+        "Room1 -> Outside": {
+            "cdtc": 87.0
+        },
+        "Room2 -> Outside": {
+            "cdtc": 174.0
+        },
+        "AC-in -> AC-out": {
+            "ac_mode": 0,
+            "pre_tmp": 20.0
+        },
+        "Room2 -> solar": {
+            "ms": 1.0
+        }
+    },
+    "version": "4.0.0"
+}
