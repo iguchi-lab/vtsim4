@@ -51,8 +51,8 @@ AC_STOP:    int = vt.AC_STOP
 read_csv = lambda fn:   pd.read_csv(fn, index_col = 0, parse_dates = True).fillna(method = 'bfill')\
                                                                           .fillna(method = 'ffill')     #csvファイルの読み込み
 
-index = lambda df:     df.index.strftime('%Y/%m/%d %H:%M:%S').to_list()
-data  = lambda df:     df.to_list()
+#index = lambda df:     df.index.strftime('%Y/%m/%d %H:%M:%S').to_list()
+#data  = lambda df:     df.to_list()
 
 df   = lambda length:   pd.DataFrame(index = pd.date_range(datetime(2021, 1, 1, 0, 0, 0), 
                                      datetime(2021, 1, 1, 0, 0, 0) + timedelta(seconds = length), 
@@ -65,6 +65,9 @@ calc = vt.VTSim()
 def encode(object):
     if isinstance(object, pd.core.indexes.datetimes.DatetimeIndex): return(object.strftime('%Y/%m/%d %H:%M:%S').to_list())
     if isinstance(object, pd.core.series.Series):                   return(object.to_list())
+
+def json(input):
+    return(json.dumps(input, default = vt.encode, ensure_ascii = False, indent = 4))
 
 df_p   = pd.DataFrame()
 df_c   = pd.DataFrame()
