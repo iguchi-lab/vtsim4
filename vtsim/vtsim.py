@@ -101,17 +101,17 @@ def to_list_i(v):
 
 def run_calc(input):                                                                    #はじめに呼び出される関数    
     if   type(input) == dict: input = to_json(input)                                    #辞書型であれば、JSON形式に変換
-    elif type(input) != str: raise Exception('ERROR: input must be dict or json!')      #文字列（JSON形式)で無ければエラー
+    elif type(input) != str: raise Exception('ERROR: inputは、辞書型かJSON形式である必要がります。')      #文字列（JSON形式)で無ければエラー
     
     input = json.loads(input)                                                           #JSON形式を辞書型に変換
 
     print('Set calc status.')
     if 'index' in input:    set_calc_status(input)                                      #計算条件を設定
-    else:                   raise Exception('ERROR: index does not exist!')             #indexが無ければエラー
+    else:                   raise Exception('ERROR: index が存在しません。')             #indexが無ければエラー
 
     print('Add Capacity')   
     if 'sn' in input:       input = add_capa(input)                                     #熱容量を設定
-    else:                   raise Exception('ERROR: sn does not exist!')                #sn（ノード）が無ければエラー
+    else:                   raise Exception('ERROR: ノード(sn)が存在しません。')                #sn（ノード）が無ければエラー
 
     with open('calc.json', 'w') as f:                                                   #計算入力を　calc.jsonに格納
         json.dump(input, f, ensure_ascii = False, indent = 4)
@@ -119,7 +119,7 @@ def run_calc(input):                                                            
 
     print('Set SimNode.')
     if 'sn' in input:       set_sim_node(input['sn'])                                   #sn（ノード）の設定
-    else:                   raise Exception('ERROR: sn does not exist!')                #sn（ノード）が無ければエラー
+    else:                   raise Exception('ERROR: ノード(sn)が存在しません。')            #sn（ノード）が無ければエラー
 
     print('Set VentNet.')
     if 'vn' in input:       set_vent_net(input['vn'])                                   #vn（換気回路網）の設定
@@ -206,12 +206,12 @@ def set_sim_node(sn):
 
 def get_n1n2(nt):  
     s = nt.replace(' ', '')
-    if s.find('->') == -1:  raise Exception('ERROR: -> does not exist!')
+    if s.find('->') == -1:  raise Exception('ERROR: vnもしくはtnのキーに -> が存在しません')
     if s.find(':')  == -1:  n1, n2 = s[:s.find('->')], s[s.find('->') + 2:]
     else:                   n1, n2 = s[:s.find('->')], s[s.find('->') + 2: s.find(':')]
 
-    if n1 not in calc.node: raise Exception('ERROR: 設定されたノードの中に ' + n1 + ' がありません。')
-    if n2 not in calc.node: raise Exception('ERROR: 設定されたノードの中に ' + n2 + ' がありません。')
+    if n1 not in calc.node: raise Exception('ERROR: ノード(sn)の中に ' + n1 + ' がありません。')
+    if n2 not in calc.node: raise Exception('ERROR: ノード(sn)の中に ' + n2 + ' がありません。')
 
     return n1, n2
 
@@ -224,7 +224,7 @@ def set_vent_net(vn):
             elif ('qmax'   in vn[nt]) and ('pmax' in vn[nt]):  vn_type = vt.VN_FAN
             elif  'vol'    in vn[nt]:                          vn_type = vt.VN_FIX
             elif  'ac-vol' in vn[nt]:                          vn_type = vt.VN_AIRCON
-            else:                                             raise Exception('ERROR: Unable to recognize vn_type of ' + nt)    
+            else:                                             raise Exception('ERROR: ' + nt + 'のvn_typeを認識できません')    
         else:
             vn_type = vn[nt]['type']
 
@@ -261,7 +261,7 @@ def set_thrm_net(tn):
             elif ('phi_0'    in tn[nt]) and ('cof_r'   in tn[nt]): tn_type = vt.TN_GROUND
             elif ('ac_mode'  in tn[nt]) and ('pre_tmp' in tn[nt]): tn_type = vt.TN_AIRCON
             elif  'cdtc'     in tn[nt]:                            tn_type = vt.TN_SIMPLE
-            else:                                                  raise Exception('ERROR: Unable to recognize tn_type of ' + nt) 
+            else:                                                  raise Exception('ERROR: ' + nt + 'のtn_typeを認識できません') 
         else:
             tn_type = tn[nt]['type']
 
