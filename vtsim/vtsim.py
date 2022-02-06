@@ -199,10 +199,19 @@ def set_sim_node(sn):
 
 def set_vent_net(vn):
     for i, nt in enumerate(vn):
+        #vn_type = vn[nt]['type'] if 'type' in vn[nt] else vt.VN_FIX
+        
+        if 'type' not in vn[nt]:
+            if   ('alpha' in vn[nt]) and ('area' in vn[nt]):  vn_type = vt.VN_SIMPLE
+            elif ('a'     in vn[nt]) and ('n'    in vn[nt]):  vn_type = vt.VN_GAP
+            elif ('qmax'  in vn[nt]) and ('pmax' in vn[nt]):  vn_type = vt.VN_FAN
+            else:                                             vn_type = vt.VN_FIX
+        else:
+            vn_type = vn[nt]['type']
+
         h1 = to_list_f(vn[nt]['h1']) if 'h1' in vn[nt] else to_list_f(0.0)                          #高さ1、行列設定不可
         h2 = to_list_f(vn[nt]['h2']) if 'h2' in vn[nt] else to_list_f(0.0)                          #高さ2、行列設定不可
-        vn_type = vn[nt]['type'] if 'type' in vn[nt] else vt.VN_FIX
-
+        
         s = nt.replace(' ', '')
         if s.find('->') == -1:  raise Exception('ERROR: -> does not exist!')
         if s.find(':')  == -1:  n1, n2 = s[:s.find('->')], s[s.find('->') + 2:]
@@ -229,7 +238,7 @@ def set_vent_net(vn):
 
 def set_thrm_net(tn):
     for i, nt in enumerate(tn):
-        tn_type =tn[nt]['type'] if 'type' in tn[nt] else vt.TN_SIMPLE
+        tn_type = tn[nt]['type'] if 'type' in tn[nt] else vt.TN_SIMPLE
 
         s = nt.replace(' ', '')
         calc.tn_add(i, calc.node[s[:s.find('->')]], calc.node[s[s.find('->') + 2:]], tn_type)
