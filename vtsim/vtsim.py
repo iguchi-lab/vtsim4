@@ -2,6 +2,7 @@
 # import
 ###############################################################################
 
+from ast import Str
 import numpy as np
 import pandas as pd
 import time
@@ -102,9 +103,10 @@ def to_list_i(v):
     elif type(v) == pd.core.series.Series:  return(np.array(v))
     else:                                   return[int(v)] * calc.sts.length
 
-def run_calc(inp):                                                     #はじめに呼び出される関数    
-    input = json.loads(inp)
-    
+def run_calc(input):                                                     #はじめに呼び出される関数    
+    if   type(input) == Str:  input = json.loads(input)
+    elif type(input) != dict: raise Exception('ERROR: input must be dict or json!')
+
     print('Set calc status.')
     if 'index' in input:    set_calc_status(input)  
     else:                   raise Exception('ERROR: index does not exist!')
