@@ -66,13 +66,18 @@ def encode(object):
     if isinstance(object, pd.core.indexes.datetimes.DatetimeIndex): return(object.strftime('%Y/%m/%d %H:%M:%S').to_list())
     if isinstance(object, pd.core.series.Series):                   return(object.to_list())
 
+def read_json(fn):
+    with open(fn) as f:
+        input = json.load(f)
+    return input
+
 def write_json(input, fn):
-    input['version': '4.0.0']
+    input['version'] = '4.0.0'
     with open(fn, 'w') as f:
         json.dump(input, f, default = encode, ensure_ascii = False, indent = 4)
 
 def to_json(input):
-    input['version': '4.0.0']
+    input['version'] = '4.0.0'
     return(json.dumps(input, default = encode, ensure_ascii = False, indent = 4))
 
 df_p   = pd.DataFrame()
