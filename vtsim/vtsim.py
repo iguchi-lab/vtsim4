@@ -1,8 +1,6 @@
 ###############################################################################
 # import
 ###############################################################################
-
-from ast import Str
 import numpy as np
 import pandas as pd
 import time
@@ -16,7 +14,6 @@ import vtsimc as vt
 ###############################################################################
 # define const
 ###############################################################################
-
 SOLVE_LU:   int = vt.SOLVE_LU
 SOLVE_SOR:  int = vt.SOLVE_SOR
 
@@ -47,13 +44,10 @@ AC_COOLING: int = vt.AC_COOLING
 AC_STOP:    int = vt.AC_STOP
 
 ###############################################################################
-# define lambda
+# define lambda etc.
 ###############################################################################
 read_csv = lambda fn:   pd.read_csv(fn, index_col = 0, parse_dates = True).fillna(method = 'bfill')\
                                                                           .fillna(method = 'ffill')     #csvファイルの読み込み
-
-#index = lambda df:     df.index.strftime('%Y/%m/%d %H:%M:%S').to_list()
-#data  = lambda df:     df.to_list()
 
 df   = lambda length:   pd.DataFrame(index = pd.date_range(datetime(2021, 1, 1, 0, 0, 0), 
                                      datetime(2021, 1, 1, 0, 0, 0) + timedelta(seconds = length), 
@@ -61,25 +55,27 @@ df   = lambda length:   pd.DataFrame(index = pd.date_range(datetime(2021, 1, 1, 
                                                           
 d_node  = lambda name:  name + '_c'                                                                     #遅延ノードの名前作成
 
-calc = vt.VTSim()
+def encode(object):                                                                                     #JSON形式に変換する際のエンコード
+    if isinstance(object, pd.core.indexes.datetimes.DatetimeIndex): 
+        return(object.strftime('%Y/%m/%d %H:%M:%S').to_list())
+    if isinstance(object, pd.core.series.Series):                   
+        return(object.to_list())
 
-def encode(object):
-    if isinstance(object, pd.core.indexes.datetimes.DatetimeIndex): return(object.strftime('%Y/%m/%d %H:%M:%S').to_list())
-    if isinstance(object, pd.core.series.Series):                   return(object.to_list())
-
-def read_json(fn):
+def read_json(fn):                                                                                      #JSON形式を読み込みdict型で返す
     with open(fn) as f:
         input = json.load(f)
     return input
 
-def write_json(input, fn):
+def write_json(input, fn):                                                                              #dict型をJSONファイルに書き出し
     input['version'] = '4.0.0'
     with open(fn, 'w') as f:
         json.dump(input, f, default = encode, ensure_ascii = False, indent = 4)
 
-def to_json(input):
+def to_json(input):                                                                                     #dict型をJSON形式に変換
     input['version'] = '4.0.0'
-    return(json.dumps(input, default = encode, ensure_ascii = False, indent = 4))
+    return(json.dumps(input, default = encode, ensure_ascii = False, indent = 4))                       
+
+calc = vt.VTSim()
 
 df_p   = pd.DataFrame()
 df_c   = pd.DataFrame()
@@ -210,7 +206,6 @@ def set_sim_node(sn):
 
 def set_vent_net(vn):
     for i, nt in enumerate(vn):
-        #vn_type = vn[nt]['type'] if 'type' in vn[nt] else vt.VN_FIX
         
         if 'type' not in vn[nt]:
             if   ('alpha'  in vn[nt]) and ('area' in vn[nt]):  vn_type = vt.VN_SIMPLE
@@ -229,6 +224,9 @@ def set_vent_net(vn):
         if s.find('->') == -1:  raise Exception('ERROR: -> does not exist!')
         if s.find(':')  == -1:  n1, n2 = s[:s.find('->')], s[s.find('->') + 2:]
         else:                   n1, n2 = s[:s.find('->')], s[s.find('->') + 2: s.find(':')]
+
+        if n1 not in calc.node: raise Exception('ERROR: ' + n1 + ' does not exist in nodes(sn)!')
+        if n2 not in calc.node: raise Exception('ERROR: ' + n2 + ' does not exist in nodes(sn)!')
 
         calc.vn_add(i, calc.node[n1], calc.node[n2], vn_type, h1, h2)
         
@@ -253,7 +251,6 @@ def set_vent_net(vn):
 
 def set_thrm_net(tn):
     for i, nt in enumerate(tn):
-        #tn_type = tn[nt]['type'] if 'type' in tn[nt] else vt.TN_SIMPLE
 
         if 'type' not in tn[nt]:
             if    'ms'       in tn[nt]:                            tn_type = vt.TN_SOLAR
