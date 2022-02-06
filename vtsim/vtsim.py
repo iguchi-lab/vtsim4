@@ -66,8 +66,8 @@ def encode(object):
     if isinstance(object, pd.core.indexes.datetimes.DatetimeIndex): return(object.strftime('%Y/%m/%d %H:%M:%S').to_list())
     if isinstance(object, pd.core.series.Series):                   return(object.to_list())
 
-def write_json(input, f):
-    with open('tutorial_ibec.json', 'w') as f:
+def write_json(input, fn):
+    with open(fn, 'w') as f:
         json.dump(input, f, default = encode, ensure_ascii = False, indent = 4)
 
 def to_json(input):
