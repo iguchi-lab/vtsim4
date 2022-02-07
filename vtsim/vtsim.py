@@ -52,8 +52,6 @@ read_csv = lambda fn:   pd.read_csv(fn, index_col = 0, parse_dates = True).filln
 df   = lambda length:   pd.DataFrame(index = pd.date_range(datetime(2021, 1, 1, 0, 0, 0), 
                                      datetime(2021, 1, 1, 0, 0, 0) + timedelta(seconds = length), 
                                      freq='1s'))                                                        #長さlength、1s毎の時刻
-                                                          
-d_node  = lambda name:  name + '_c'                                                                     #遅延ノードの名前作成
 
 def encode(object):                                                                                     #JSON形式に変換する際のエンコード
     if isinstance(object, pd.core.indexes.datetimes.DatetimeIndex): 
@@ -104,18 +102,22 @@ def run_calc(input):                                                            
     elif type(input) != str: raise Exception('ERROR: inputは、辞書型かJSON形式である必要がります。')      #文字列（JSON形式)で無ければエラー
     
     input = json.loads(input)                                                           #JSON形式を辞書型に変換
+    if 'vn' not in input:   input['vn'] = {}
+    if 'tn' not in input:   input['tn'] = {}
 
     print('Set calc status.')
     if 'index' in input:    set_calc_status(input)                                      #計算条件を設定
     else:                   raise Exception('ERROR: index が存在しません。')             #indexが無ければエラー
 
-    print('Add Capacity')   
+    print('Add Capacity.')   
     if 'sn' in input:       input = add_capa(input)                                     #熱容量を設定
-    else:                   raise Exception('ERROR: ノード(sn)が存在しません。')                #sn（ノード）が無ければエラー
+    else:                   raise Exception('ERROR: ノード(sn)が存在しません。')         #sn（ノード）が無ければエラー
+
+    print('Set Aircon.')
+    if 'aircon' in input:   input = set_aircon(input)                                   #エアコンをセット
 
     with open('calc.json', 'w') as f:                                                   #計算入力を　calc.jsonに格納
         json.dump(input, f, ensure_ascii = False, indent = 4)
-
 
     print('Set SimNode.')
     if 'sn' in input:       set_sim_node(input['sn'])                                   #sn（ノード）の設定
@@ -171,19 +173,41 @@ def set_calc_status(input):
 
     calc.setup(sts)
 
-def add_capa(input):
-    if 'tn' not in input:   input['tn'] = {}
-    
+def add_capa(input):    
     for n in [n for n in input['sn'] if 'capa' in input['sn'][n]]:                              #熱容量の設定のあるノード
-        input['sn'][d_node(n)] = {}
-        input['sn'][d_node(n)]['t_flag'] = vt.SN_DLY                                            #計算フラグ
-        input['sn'][d_node(n)]['s_i']    = n                                                    #親ノードの設定
-        if 't' in input['sn'][n]:   input['sn'][d_node(n)]['t'] = input['sn'][n]['t']           #初期温度の継承
+        nc = n + '_c'
+        
+        input['sn'][nc] = {}
+        input['sn'][nc]['t_flag'] = vt.SN_DLY                                            #計算フラグ
+        input['sn'][nc]['s_i']    = n                                                    #親ノードの設定
+        if 't' in input['sn'][n]:   input['sn'][nc]['t'] = input['sn'][n]['t']           #初期温度の継承
 
-        input['tn'][n + ' -> ' + d_node(n)] = {}
-        input['tn'][n + ' -> ' + d_node(n)]['type'] = vt.TN_SIMPLE                              #熱容量の設定
-        input['tn'][n + ' -> ' + d_node(n)]['cdtc'] = input['sn'][n]['capa'] / calc.sts.t_step  #コンダクタンス（熱容量）     
+        input['tn'][n + ' -> ' + nc] = {}
+        input['tn'][n + ' -> ' + nc]['type'] = vt.TN_SIMPLE                              #熱容量の設定
+        input['tn'][n + ' -> ' + nc]['cdtc'] = input['sn'][n]['capa'] / calc.sts.t_step  #コンダクタンス（熱容量）     
 
+    return input
+
+def set_aircon(input):
+    aircon = input['aircon']
+
+    for i, ac in enumerate([ac for ac in input['aircon']]):
+    
+        if i == 1:  raise Exception('ERROR: エアコンは2台以上設置できません')
+
+        ac_in, ac_out  = ac + '_in', ac + '_out'  
+        n1, n2 = aircon[ac]['in'], aircon[ac]['out']
+
+        input['sn'][ac_in]  = {}
+        input['sn'][ac_out]['t_flag'] = vt.SN_CALC
+
+        input['vn'][n1     + ' -> ' + ac_in]['vol']     = aircon[ac]['vol'] if 'vol' in aircon[ac] else 1000 / 3600
+        input['vn'][ac_in  + ' -> ' + ac_out]['ac_vol'] = aircon[ac]['vol'] if 'vol' in aircon[ac] else 1000 / 3600
+        input['vn'][ac_out + ' -> ' + n2]['vol']        = aircon[ac]['vol'] if 'vol' in aircon[ac] else 1000 / 3600
+
+        input['tn'][ac_in  + ' -> ' + ac_out]['ac_mode'] = aircon[ac]['ac_mode']
+        input['tn'][ac_in  + ' -> ' + ac_out]['pre_tmp'] = aircon[ac]['pre_tmp']
+    
     return input
 
 def set_sim_node(sn):
@@ -237,7 +261,7 @@ def set_vent_net(vn):
         if vn_type == vt.VN_FIX:       
             calc.vn[i].qv = to_list_f(vn[nt]['vol'])                                                #風量固定値、行列で設定可能
         if vn_type == vt.VN_AIRCON:
-            calc.vn[i].qv = to_list_f(vn[nt]['ac-vol'])                                             #風量固定値、行列で設定可能
+            calc.vn[i].qv = to_list_f(vn[nt]['ac_vol'])                                             #風量固定値、行列で設定可能
         if vn_type == vt.VN_SIMPLE:                                                                 
             calc.vn[i].alpha = to_list_f(vn[nt]['alpha'])
             calc.vn[i].area  = to_list_f(vn[nt]['area'])                                            #単純開口、行列で設定可能
