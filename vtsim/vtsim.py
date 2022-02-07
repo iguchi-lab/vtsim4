@@ -195,7 +195,7 @@ def set_aircon(input):
     
         if i == 1:  raise Exception('ERROR: エアコンは2台以上設置できません')
 
-        ac_in, ac_out, ac_set  = ac + '_in', ac + '_out'  
+        ac_in, ac_out = ac + '_in', ac + '_out'  
         n1, n2, n3 = aircon[ac]['in'], aircon[ac]['out'], aircon[ac]['set']
 
         input['sn'][ac_in]            = {}
