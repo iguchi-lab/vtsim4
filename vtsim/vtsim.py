@@ -195,8 +195,8 @@ def set_aircon(input):
     
         if i == 1:  raise Exception('ERROR: エアコンは2台以上設置できません')
 
-        ac_in, ac_out, ac_set  = ac + '_in', ac + '_out', ac + 'set'  
-        n1, n2 = aircon[ac]['in'], aircon[ac]['out']
+        ac_in, ac_out, ac_set  = ac + '_in', ac + '_out'  
+        n1, n2, n3 = aircon[ac]['in'], aircon[ac]['out'], aircon[ac]['set']
 
         input['sn'][ac_in]            = {}
         input['sn'][ac_out]           = {'t_flag': vt.SN_CALC}
@@ -207,7 +207,7 @@ def set_aircon(input):
         input['vn'][ac_in  + ' -> ' + ac_out] = {'ac_vol': vol}
         input['vn'][ac_out + ' -> ' + n2]     = {'vol': vol}
 
-        input['tn'][ac_set  + ' -> ' + ac_out] = {'ac_mode': aircon[ac]['ac_mode'], 'pre_tmp': aircon[ac]['pre_tmp']}
+        input['tn'][n3  + ' -> ' + ac_out] = {'ac_mode': aircon[ac]['ac_mode'], 'pre_tmp': aircon[ac]['pre_tmp']}
     
     return input
 
