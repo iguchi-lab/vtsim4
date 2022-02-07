@@ -247,7 +247,7 @@ def set_vent_net(vn):
             elif ('a'      in vn[nt]) and ('n'    in vn[nt]):  vn_type = vt.VN_GAP
             elif ('qmax'   in vn[nt]) and ('pmax' in vn[nt]):  vn_type = vt.VN_FAN
             elif  'vol'    in vn[nt]:                          vn_type = vt.VN_FIX
-            elif  'ac-vol' in vn[nt]:                          vn_type = vt.VN_AIRCON
+            elif  'ac_vol' in vn[nt]:                          vn_type = vt.VN_AIRCON
             else:                                             raise Exception('ERROR: ' + nt + 'のvn_typeを認識できません')    
         else:
             vn_type = vn[nt]['type']
