@@ -198,15 +198,16 @@ def set_aircon(input):
         ac_in, ac_out  = ac + '_in', ac + '_out'  
         n1, n2 = aircon[ac]['in'], aircon[ac]['out']
 
-        input['sn'][ac_in]  = {}
-        input['sn'][ac_out]['t_flag'] = vt.SN_CALC
+        input['sn'][ac_in]            = {}
+        input['sn'][ac_out]           = {'t_flag': vt.SN_CALC}
 
-        input['vn'][n1     + ' -> ' + ac_in]['vol']     = aircon[ac]['vol'] if 'vol' in aircon[ac] else 1000 / 3600
-        input['vn'][ac_in  + ' -> ' + ac_out]['ac_vol'] = aircon[ac]['vol'] if 'vol' in aircon[ac] else 1000 / 3600
-        input['vn'][ac_out + ' -> ' + n2]['vol']        = aircon[ac]['vol'] if 'vol' in aircon[ac] else 1000 / 3600
+        vol = aircon[ac]['vol'] if 'vol' in aircon[ac] else 1000 / 3600
 
-        input['tn'][ac_in  + ' -> ' + ac_out]['ac_mode'] = aircon[ac]['ac_mode']
-        input['tn'][ac_in  + ' -> ' + ac_out]['pre_tmp'] = aircon[ac]['pre_tmp']
+        input['vn'][n1     + ' -> ' + ac_in]  = {'vol': vol}
+        input['vn'][ac_in  + ' -> ' + ac_out] = {'ac_vol': vol}
+        input['vn'][ac_out + ' -> ' + n2]     = {'vol': vol}
+
+        input['tn'][ac_in  + ' -> ' + ac_out] = {'ac_mode': aircon[ac]['ac_mode'], 'pre_tmp': aircon[ac]['pre_tmp']}
     
     return input
 
