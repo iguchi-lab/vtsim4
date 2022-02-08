@@ -165,7 +165,7 @@ def run_calc(input):                                                            
     logger.info('c_idc   ', str(calc.c_idc))
     logger.info('t_idc   ', str(calc.t_idc))
     logger.info('i_vn_ac ', str(calc.i_vn_ac))
-    logger.info('i_tn_ac ', str(calc.i_tn_ac)9
+    logger.info('i_tn_ac ', str(calc.i_tn_ac))
 
     logger.info('Start vtsim calc.')
     s_time = time.time()
