@@ -5,11 +5,15 @@ import numpy as np
 import pandas as pd
 import time
 import json
+import logging
 
 from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
 
 import vtsimc as vt
+
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 ###############################################################################
 # define const
@@ -105,52 +109,73 @@ def run_calc(input):                                                            
     if 'vn' not in input:   input['vn'] = {}
     if 'tn' not in input:   input['tn'] = {}
 
-    print('Set calc status.')
+    logger.info('Set calc status.')
     if 'index' in input:    set_calc_status(input)                                      #計算条件を設定
     else:                   raise Exception('ERROR: index が存在しません。')             #indexが無ければエラー
 
-    print('Add Capacity.')   
+    logger.info('Add Capacity.')   
     if 'sn' in input:       input = add_capa(input)                                     #熱容量を設定
     else:                   raise Exception('ERROR: ノード(sn)が存在しません。')         #sn（ノード）が無ければエラー
 
-    print('Set Aircon.')
+    logger.info('Set Aircon.')
     if 'aircon' in input:   input = set_aircon(input)                                   #エアコンをセット
 
     with open('calc.json', 'w') as f:                                                   #計算入力を　calc.jsonに格納
         json.dump(input, f, ensure_ascii = False, indent = 4)
 
-    print('Set SimNode.')
+    logger.info('Set SimNode.')
     if 'sn' in input:       set_sim_node(input['sn'])                                   #sn（ノード）の設定
     else:                   raise Exception('ERROR: ノード(sn)が存在しません。')            #sn（ノード）が無ければエラー
 
-    print('Set VentNet.')
+    logger.info('Set VentNet.')
     if 'vn' in input:       set_vent_net(input['vn'])                                   #vn（換気回路網）の設定
 
-    print('Set ThrmNet.')
+    logger.info('Set ThrmNet.')
     if 'tn' in input:       set_thrm_net(input['tn'])                                   #tn（熱回路網）の設定
 
-    print('ready')
-    print('sts     ', calc.sts)
-    print('sn      ', calc.sn)
-    print('node    ', calc.node)
-    print('vn      ', calc.vn)
-    print('tn      ', calc.tn)
-    print('v_idc   ', calc.v_idc)
-    print('c_idc   ', calc.c_idc)
-    print('t_idc   ', calc.t_idc)
-    print('i_vn_ac ', calc.i_vn_ac)
-    print('i_tn_ac ', calc.i_tn_ac)
+    logger.info('ready')
+    logger.info('sts     ', calc.sts)
+    logger.info('sn      ', calc.sn)
+    logger.info('node    ', calc.node)
+    logger.info('vn      ', calc.vn)
+    logger.info('tn      ', calc.tn)
+    logger.info('v_idc   ', calc.v_idc)
+    logger.info('c_idc   ', calc.c_idc)
+    logger.info('t_idc   ', calc.t_idc)
+    logger.info('i_vn_ac ', calc.i_vn_ac)
+    logger.info('i_tn_ac ', calc.i_tn_ac)
 
-    print('Start vtsim calc.')
+    logger.info('Start vtsim calc.')
     s_time = time.time()
     calc.calc()                                                                         #計算
     e_time = time.time() - s_time    
-    print('Finish vtsim calc.')
-    print("calc time = {0}".format(e_time * 1000) + "[ms]")
+    logger.info('Finish vtsim calc.')
+    logger.info("calc time = {0}".format(e_time * 1000) + "[ms]")
 
     opt = input['opt'] if 'opt' in input else OPT_GRAPH
 
-    return output_calc(input['index'], opt, calc.result(), input['sn'].keys(), input['vn'].keys(), input['tn'].keys())
+    dat_list  = [{'columns': input['sn'].keys(), 'fn': 'vent_p.csv',   'title': '圧力',  'unit': '[Pa]'},
+                 {'columns': input['sn'].keys(), 'fn': 'vent_c.csv',   'title': '濃度',  'unit': '[個/L]'},
+                 {'columns': input['sn'].keys(), 'fn': 'them_t.csv',   'title': '温度',  'unit': '[℃]'},
+                 {'columns': input['vn'].keys(), 'fn': 'vent_qv.csv',  'title': '風量',  'unit': '[m3/s]'},
+                 {'columns': input['vn'].keys(), 'fn': 'thrm_qt1.csv', 'title': '熱量1', 'unit': '[W]'},
+                 {'columns': input['tn'].keys(), 'fn': 'thrm_qt2.csv', 'title': '熱量2', 'unit': '[W]'}]
+
+    ix = pd.to_datetime(input['index'], format='%Y/%m/%d %H:%M:%S')
+    res = calc.result()
+
+    for i, d in enumerate(dat_list):
+        if len(res[i]) != 0: d['df'] = pd.DataFrame(np.array(res[i]).T,  index = ix, columns = d['columns'])
+
+    global df_p, df_c, df_t, df_qv, df_qt1, df_qt2
+    df_p   = dat_list[0]['df']
+    df_c   = dat_list[1]['df']
+    df_t   = dat_list[2]['df'] 
+    df_qv  = dat_list[3]['df']
+    df_qt1 = dat_list[4]['df']
+    df_qt2 = dat_list[5]['df']
+
+    output_calc(dat_list, opt)
 
 def set_calc_status(input):
     sts  = vt.CalcStatus()
@@ -308,25 +333,14 @@ def set_thrm_net(tn):
             calc.tn[i].cof_r   = tn[nt]['cof_r']
             calc.tn[i].cof_phi = tn[nt]['cof_phi']                                     #地盤熱応答、行列設定不可（面積と断熱性能はOK）         
 
-def output_calc(ix, opt, res, sn_c, vn_c, tn_c):
-    dat_list  = [{'df': pd.DataFrame(), 'columns': sn_c, 'fn': 'vent_p.csv',   'title': '圧力',  'unit': '[Pa]'},
-                 {'df': pd.DataFrame(), 'columns': sn_c, 'fn': 'vent_c.csv',   'title': '濃度',  'unit': '[個/L]'},
-                 {'df': pd.DataFrame(), 'columns': sn_c, 'fn': 'them_t.csv',   'title': '温度',  'unit': '[℃]'},
-                 {'df': pd.DataFrame(), 'columns': vn_c, 'fn': 'vent_qv.csv',  'title': '風量',  'unit': '[m3/s]'},
-                 {'df': pd.DataFrame(), 'columns': vn_c, 'fn': 'thrm_qt1.csv', 'title': '熱量1', 'unit': '[W]'},
-                 {'df': pd.DataFrame(), 'columns': tn_c, 'fn': 'thrm_qt2.csv', 'title': '熱量2', 'unit': '[W]'}]
-    
-    ix = pd.to_datetime(ix, format='%Y/%m/%d %H:%M:%S')
+def output_calc(dat_list, opt):
 
-    for i, d in enumerate(dat_list):
-        if len(res[i]) != 0: d['df'] = pd.DataFrame(np.array(res[i]).T,  index = ix, columns = d['columns'])
-
-    if opt >= OPT_CSV:
-        print('Output csv files.')
+    if opt == OPT_CSV or opt == OPT_GRAPH:
+        logger.info('Output csv files.')
         for d in dat_list:      d['df'].to_csv(d['fn'], encoding = 'utf_8_sig')
 
-    if opt >= OPT_GRAPH:
-        print('Draw Graphs.')
+    if opt == OPT_GRAPH:
+        logger.info('Draw Graphs.')
         fig = plt.figure(facecolor = 'w', figsize = (18, len(dat_list) * 4))
         fig.subplots_adjust(wspace = -0.1, hspace=0.9)
 
@@ -338,13 +352,3 @@ def output_calc(ix, opt, res, sn_c, vn_c, tn_c):
                      loc = 'lower right', borderaxespad = 0, facecolor = 'w', edgecolor = 'k')
             a.set_title(d['title'], loc='left')
             a.set_ylabel(d['unit'])
-
-    global df_p, df_c, df_t, df_qv, df_qt1, df_qt2
-    df_p   = dat_list[0]['df']
-    df_c   = dat_list[1]['df']
-    df_t   = dat_list[2]['df'] 
-    df_qv  = dat_list[3]['df']
-    df_qt1 = dat_list[4]['df']
-    df_qt2 = dat_list[5]['df']
-
-    return dat_list[0]['df'], dat_list[1]['df'], dat_list[2]['df'], dat_list[3]['df'], dat_list[4]['df'], dat_list[5]['df']
