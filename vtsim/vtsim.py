@@ -12,8 +12,14 @@ import matplotlib.pyplot as plt
 
 import vtsimc as vt
 
-#logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
+streamhandler = logging.StreamHandler()
+logger.setLevel(logging.INFO)
+format = '[%(asctime)s][%(levelname)s][%(message)s]'
+datefmt='%Y/%m/%d %I:%M:%S'
+formatter = logging.Formatter(format, datefmt)
+streamhandler.setFormatter(formatter)
+
 
 ###############################################################################
 # define const
