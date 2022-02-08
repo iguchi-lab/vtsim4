@@ -12,14 +12,30 @@ import matplotlib.pyplot as plt
 
 import vtsimc as vt
 
-logger = logging.getLogger(__name__)
-streamhandler = logging.StreamHandler()
-logger.setLevel(logging.INFO)
-format = '[%(asctime)s][%(levelname)s][%(message)s]'
-datefmt='%Y/%m/%d %I:%M:%S'
-formatter = logging.Formatter(format, datefmt)
-streamhandler.setFormatter(formatter)
+import logging
+from pytz import timezone
+from datetime import datetime
 
+# loggerに命名する. この名前で呼び出すことで他のモジュールにも以下の設定が引き継がれる.
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+
+# コンソールに出力するハンドラの設定
+sh = logging.StreamHandler()
+sh.setLevel(logging.INFO)
+
+logger.addHandler(sh)
+
+def customTime(*args):
+    return datetime.now(timezone('Asia/Tokyo')).timetuple()
+
+formatter = logging.Formatter(
+    fmt='%(levelname)s : %(asctime)s : %(message)s',
+    datefmt="%Y-%m-%d %H:%M:%S %z"
+)
+
+formatter.converter = customTime
+sh.setFormatter(formatter)
 
 ###############################################################################
 # define const
