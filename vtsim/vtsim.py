@@ -31,7 +31,7 @@ def customTime(*args):
 
 formatter = logging.Formatter(
     fmt='%(levelname)s : %(asctime)s : %(message)s',
-    datefmt="%Y-%m-%d %H:%M:%S %z"
+    datefmt="%Y-%m-%d %H:%M:%S"
 )
 
 formatter.converter = customTime
