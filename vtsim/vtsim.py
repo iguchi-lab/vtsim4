@@ -30,7 +30,8 @@ def customTime(*args):
     return datetime.now(timezone('Asia/Tokyo')).timetuple()
 
 formatter = logging.Formatter(
-    fmt='%(levelname)s : %(asctime)s : %(message)s',
+    #fmt='%(levelname)s : %(asctime)s : %(message)s',
+    fmt='%(asctime)s : %(message)s',
     datefmt="%Y-%m-%d %H:%M:%S"
 )
 
@@ -139,11 +140,11 @@ def run_calc(input):                                                            
     if 'sn' in input:       input = add_capa(input)                                     #熱容量を設定
     else:                   raise Exception('ERROR: ノード(sn)が存在しません。')         #sn（ノード）が無ければエラー
 
-    logger.info('Set Aircon.')
-    if 'aircon' in input:   input = set_aircon(input)                                   #エアコンをセット
+    logger.info('Set Aircon1.')
+    if 'aircon' in input:   input = set_aircon1(input)                                   #エアコンをセット
 
-    with open('calc.json', 'w') as f:                                                   #計算入力を　calc.jsonに格納
-        json.dump(input, f, ensure_ascii = False, indent = 4)
+    #with open('calc.json', 'w') as f:                                                   #計算入力を　calc.jsonに格納
+    #    json.dump(input, f, ensure_ascii = False, indent = 4)
 
     logger.info('Set SimNode.')
     if 'sn' in input:       set_sim_node(input['sn'])                                   #sn（ノード）の設定
@@ -155,12 +156,16 @@ def run_calc(input):                                                            
     logger.info('Set ThrmNet.')
     if 'tn' in input:       set_thrm_net(input['tn'])                                   #tn（熱回路網）の設定
 
-    logger.info('ready')
-    logger.info('sts     ' + str(calc.sts))
-    logger.info('sn      ' + str(calc.sn))
+    logger.info('Set Aircon2.')
+    if 'aircon' in input:   set_aircon2(input)
+
+    logger.info('sts     ' + str([calc.sts.length, calc.sts.t_step, calc.sts.solve, 
+                                  calc.sts.step_p, calc.sts.vent_err, calc.sts.step_t, calc.sts.thrm_err,
+                                  calc.sts.conv_err, calc.sts.sor_ratio, calc.sts.sor_err]))
+    logger.info('sn      ' + str([n.i for n in calc.sn]))
     logger.info('node    ' + str(calc.node))
-    logger.info('vn      ' + str(calc.vn))
-    logger.info('tn      ' + str(calc.tn))
+    logger.info('vn      ' + str([[nt.i1, nt.i2] for nt in calc.vn]))
+    logger.info('tn      ' + str([[nt.i1, nt.i2] for nt in calc.tn]))
     logger.info('v_idc   ' + str(calc.v_idc))
     logger.info('c_idc   ' + str(calc.c_idc))
     logger.info('t_idc   ' + str(calc.t_idc))
@@ -171,8 +176,7 @@ def run_calc(input):                                                            
     s_time = time.time()
     calc.calc()                                                                         #計算
     e_time = time.time() - s_time    
-    logger.info('Finish vtsim calc.')
-    logger.info("calc time = {0}".format(e_time * 1000) + "[ms]")
+    logger.info("Finish vtsim calc. calc time = {0}".format(e_time * 1000) + "[ms]")
 
     opt = input['opt'] if 'opt' in input else OPT_GRAPH
 
@@ -235,13 +239,10 @@ def add_capa(input):
 
     return input
 
-def set_aircon(input):
+def set_aircon1(input):
     aircon = input['aircon']
 
-    for i, ac in enumerate([ac for ac in input['aircon']]):
-    
-        if i == 1:  raise Exception('ERROR: エアコンは2台以上設置できません')
-
+    for ac in [ac for ac in aircon]:
         ac_in, ac_out = ac + '_in', ac + '_out'
 
         if 'set' in aircon[ac]:     n3 = aircon[ac]['set']
@@ -262,6 +263,19 @@ def set_aircon(input):
     
     return input
 
+def set_aircon2(input):
+    aircon = input['aircon']
+    for ac in [ac for ac in aircon]:
+        ac_in, ac_out, n3 = ac + '_in', ac + '_out', aircon[ac]['set']
+
+        for i, nt in enumerate(calc.vn):
+            if nt.vn_type == vt.VN_AIRCON:
+                if (calc.node[ac_in] == nt.i1) and (calc.node[ac_out] == nt.i2):    calc.vn_aircon_add(i)
+        
+        for i, nt in enumerate(calc.tn):
+            if nt.tn_type == vt.TN_AIRCON:
+                if (calc.node[n3]    == nt.i1) and (calc.node[ac_out] == nt.i2):    calc.tn_aircon_add(i)
+        
 def set_sim_node(sn):
     for i, n in enumerate(sn):
         calc.set_node(n, i)
@@ -325,8 +339,8 @@ def set_vent_net(vn):
             calc.vn[i].p_max = to_list_f(vn[nt]['pmax']) 
             calc.vn[i].q1    = to_list_f(vn[nt]['q1'])
             calc.vn[i].p1    = to_list_f(vn[nt]['p1'])                                              #ファン、行列で設定可能
-        if vn_type == vt.VN_AIRCON:
-            calc.i_vn_ac = i
+#        if vn_type == vt.VN_AIRCON:
+#            calc.vn_aircon_add(i)
         calc.vn[i].eta = to_list_f(vn[nt]['eta']) if 'eta' in vn[nt] else to_list_f(0.0)            #粉じん除去率、行列で設定可能
 
 def set_thrm_net(tn):
@@ -346,10 +360,10 @@ def set_thrm_net(tn):
 
         if tn_type == vt.TN_SIMPLE:     
             calc.tn[i].cdtc = to_list_f(tn[nt]['cdtc'])                                #コンダクタンス、行列設定可能
-        if tn_type == vt.TN_AIRCON:     
+        if tn_type == vt.TN_AIRCON:
             calc.tn[i].ac_mode = to_list_i(tn[nt]['ac_mode']) 
             calc.tn[i].pre_tmp = to_list_f(tn[nt]['pre_tmp'])                          #エアコン運転モード
-            calc.i_tn_ac = i
+            #calc.tn_aircon_add(i)
         if tn_type == vt.TN_SOLAR:       
             calc.tn[i].ms      = to_list_f(tn[nt]['ms'])                               #日射熱取得率、行列設定可能
         if tn_type == vt.TN_GROUND:     
