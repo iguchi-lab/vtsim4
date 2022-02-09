@@ -42,7 +42,8 @@ public:
     vector<Vent_Net> vn;                                    //換気回路網
     vector<Thrm_Net> tn;                                    //熱回路網
     vector<int> v_idc, c_idc, t_idc;
-    int i_vn_ac = -1, i_tn_ac = -1;
+    vector<int> i_vn_ac, i_tn_ac;
+    //int i_vn_ac = -1, i_tn_ac = -1;
 
     void setup(CalcStatus sts_){
         sts = sts_;
@@ -53,8 +54,10 @@ public:
         v_idc.clear();
         c_idc.clear();
         t_idc.clear();
-        i_vn_ac = -1;
-        i_tn_ac = -1;
+        i_vn_ac.clear();
+        i_tn_ac.clear();
+        //i_vn_ac = -1;
+        //i_tn_ac = -1;
     }
 
     void sn_add(int i, tuple<int, int, int> flag){
@@ -76,6 +79,14 @@ public:
         tn.push_back(Thrm_Net(sts.length, i, i1, i2, tn_type));
     }
 
+    void vn_aircon_add(int i){
+        i_vn_ac.push_back(i);
+    }
+
+    void tn_aircon_add(int i){
+        i_tn_ac.push_back(i);
+    }
+
     void change_sn_t_flag(int i, int flag_){
         get<2>(sn[i].flag) = flag_;
         t_idc.clear();
@@ -83,16 +94,16 @@ public:
             if(get<2>(sn[i].flag) == SN_CALC)     t_idc.push_back(sn[i].i);
     }
 
-    void set_aircon_status(long ts, int flag_){
-        if(tn[i_tn_ac].aircon_on[ts] == AC_OFF && flag_ == AC_ON){
-            tn[i_tn_ac].aircon_on[ts] = AC_ON;
-            change_sn_t_flag(tn[i_tn_ac].i1, SN_FIX);
-            vn[i_vn_ac].vn_type = VN_AIRCON;
+    void set_aircon_status(long ts, int i, int flag_){
+        if(tn[i_tn_ac[i]].aircon_on[ts] == AC_OFF && flag_ == AC_ON){
+            tn[i_tn_ac[i]].aircon_on[ts] = AC_ON;
+            change_sn_t_flag(tn[i_tn_ac[i]].i1, SN_FIX);
+            vn[i_vn_ac[i]].vn_type = VN_AIRCON;
         }
-        else if(tn[i_tn_ac].aircon_on[ts] == AC_ON && flag_ == AC_OFF){
-            tn[i_tn_ac].aircon_on[ts] = AC_OFF;
-            change_sn_t_flag(tn[i_tn_ac].i1, SN_CALC);  
-            vn[i_vn_ac].vn_type = VN_FIX;
+        else if(tn[i_tn_ac[i]].aircon_on[ts] == AC_ON && flag_ == AC_OFF){
+            tn[i_tn_ac[i]].aircon_on[ts] = AC_OFF;
+            change_sn_t_flag(tn[i_tn_ac[i]].i1, SN_CALC);  
+            vn[i_vn_ac[i]].vn_type = VN_FIX;
         }
     }
 
@@ -168,9 +179,11 @@ public:
             }    
         }
 
-        if(i_tn_ac != -1 && tn[i_tn_ac].aircon_on[ts] == AC_ON){                                                        //エアコンによる温度調整
-            qtsum[tn[i_tn_ac].i2] -= qtsum[tn[i_tn_ac].i1];
-            qtsum[tn[i_tn_ac].i1]  = 0.0;
+        for(unsigned int i = 0; i < i_tn_ac.size(); i++){
+            if(tn[i_tn_ac[i]].aircon_on[ts] == AC_ON){                                                        //エアコンによる温度調整
+                qtsum[tn[i_tn_ac[i]].i2] -= qtsum[tn[i_tn_ac[i]].i1];
+                qtsum[tn[i_tn_ac[i]].i1]  = 0.0;
+            }
         }
         return qtsum;
     }
@@ -185,16 +198,16 @@ public:
         for(unsigned int i = 0; i < sn.size(); i++)    t0[sn[i].i] = sn[i].t[ts];                                                //温度の初期化
         
         do{
-            if(i_tn_ac != -1){
-                set_aircon_status(ts, AC_ON);                                                                           //全部ONになってない？？
-                if(itr == 0)    set_aircon_status(ts, AC_OFF);
+            for(unsigned int i = 0; i < i_tn_ac.size(); i++){
+                set_aircon_status(ts, i, AC_ON);                                                                           //全部ONになってない？？
+                if(itr == 0)    set_aircon_status(ts, i, AC_OFF);
                 else{
-                    switch(tn[i_tn_ac].ac_mode[ts]){
-                        case AC_AUTO:       set_aircon_status(ts, AC_ON);
+                    switch(tn[i_tn_ac[i]].ac_mode[ts]){
+                        case AC_AUTO:       set_aircon_status(ts, i, AC_ON);
                                             break;
-                        case AC_COOLING:    if(t0[tn[i_tn_ac].i1] >= tn[i_tn_ac].pre_tmp[ts])   set_aircon_status(ts, AC_ON);
+                        case AC_COOLING:    if(t0[tn[i_tn_ac[i]].i1] >= tn[i_tn_ac[i]].pre_tmp[ts])   set_aircon_status(ts, i, AC_ON);
                                             break;
-                        case AC_HEATING:    if(t0[tn[i_tn_ac].i1] <= tn[i_tn_ac].pre_tmp[ts])   set_aircon_status(ts, AC_ON);
+                        case AC_HEATING:    if(t0[tn[i_tn_ac[i]].i1] <= tn[i_tn_ac[i]].pre_tmp[ts])   set_aircon_status(ts, i, AC_ON);
                                             break;
                     }
                 }
@@ -218,20 +231,20 @@ public:
             qtsum_0 = qt_sum(t0, ts);
             for(unsigned int i = 0; i < t_idc.size(); i++)   rmse += pow(qtsum_0[t_idc[i]], 2.0) / t_idc.size(); 
 
-            if(i_tn_ac != -1){
-                switch(tn[i_tn_ac].ac_mode[ts]){
-                    case AC_AUTO:       if(abs(t0[tn[i_tn_ac].i1] - tn[i_tn_ac].pre_tmp[ts]) > sts.thrm_err){
-                                            t0[tn[i_tn_ac].i1] = tn[i_tn_ac].pre_tmp[ts];
+            for(unsigned int i = 0; i < i_tn_ac.size(); i++){
+                switch(tn[i_tn_ac[i]].ac_mode[ts]){
+                    case AC_AUTO:       if(abs(t0[tn[i_tn_ac[i]].i1] - tn[i_tn_ac[i]].pre_tmp[ts]) > sts.thrm_err){
+                                            t0[tn[i_tn_ac[i]].i1] = tn[i_tn_ac[i]].pre_tmp[ts];
                                             rmse = 999;
                                         }
                                         break;
-                    case AC_HEATING:    if(t0[tn[i_tn_ac].i1] < tn[i_tn_ac].pre_tmp[ts]){
-                                            t0[tn[i_tn_ac].i1] = tn[i_tn_ac].pre_tmp[ts];
+                    case AC_HEATING:    if(t0[tn[i_tn_ac[i]].i1] < tn[i_tn_ac[i]].pre_tmp[ts]){
+                                            t0[tn[i_tn_ac[i]].i1] = tn[i_tn_ac[i]].pre_tmp[ts];
                                             rmse = 999;
                                         }                   
                                         break;
-                    case AC_COOLING:    if(t0[tn[i_tn_ac].i1] > tn[i_tn_ac].pre_tmp[ts]){
-                                            t0[tn[i_tn_ac].i1] = tn[i_tn_ac].pre_tmp[ts];
+                    case AC_COOLING:    if(t0[tn[i_tn_ac[i]].i1] > tn[i_tn_ac[i]].pre_tmp[ts]){
+                                            t0[tn[i_tn_ac[i]].i1] = tn[i_tn_ac[i]].pre_tmp[ts];
                                             rmse = 999;
                                         }
                                         break;
@@ -330,8 +343,14 @@ public:
             LOG_CONTENTS(endl);
         }
 
-        LOG_PRINT("i_vn_ac = " << i_vn_ac << endl);
-        LOG_PRINT("i_tn_ac = " << i_tn_ac << endl);
+        LOG_PRINT("i_vn_ac = ")
+        for(unsigned int i = 0; i < i_vn_ac.size(); i++) LOG_CONTENTS(" " << i_vn_ac[i]);
+        LOG_CONTENTS(endl);
+
+        LOG_PRINT("i_tn_ac = ")
+        for(unsigned int i = 0; i < i_tn_ac.size(); i++) LOG_CONTENTS(" " << i_tn_ac[i]);
+        LOG_CONTENTS(endl);
+        
         LOG_PRINT("t_idc.size() = " << t_idc.size() << endl);
         LOG_PRINT("c_idc.size() = " << c_idc.size() << endl);
         LOG_PRINT("v_idc.size() = " << v_idc.size() << endl); 
