@@ -184,44 +184,31 @@ def run_calc(input):                                                            
     res = calc.result()
     dat_list = []
 
-    i = 0
     global df_p, df_c, df_t, df_qv, df_qt1, df_qt2
 
     if len(res[0]) != 0:    
-        dat_list[i]       = {'columns': input['sn'].keys(), 'fn': 'vent_p.csv',   'title': '圧力',  'unit': '[Pa]'}
-        df_p              = pd.DataFrame(np.array(res[0]).T,  index = ix, columns = dat_list[i]['columns'])
-        dat_list[i]['df'] = df_p
-        i = i + 1
+        df_p  = pd.DataFrame(np.array(res[0]).T,  index = ix, columns = input['sn'].keys())
+        dat_list.append({'fn': 'vent_p.csv',   'title': '圧力',  'unit': '[Pa]', 'df': df_p})
 
     if len(res[1]) != 0:    
-        dat_list[i]       = {'columns': input['sn'].keys(), 'fn': 'vent_c.csv',   'title': '濃度',  'unit': '[個/L]'}
-        df_c              = pd.DataFrame(np.array(res[1]).T,  index = ix, columns = dat_list[i]['columns'])
-        dat_list[i]['df'] = df_p
-        i = i + 1
+        df_c  = pd.DataFrame(np.array(res[1]).T,  index = ix, columns = input['sn'].keys())
+        dat_list.append({'fn': 'vent_c.csv',   'title': '濃度',  'unit': '[個/L]', 'df': df_c})
 
     if len(res[2]) != 0:    
-        dat_list[i]       = {'columns': input['sn'].keys(), 'fn': 'them_t.csv',   'title': '温度',  'unit': '[℃]'}
-        df_t              = pd.DataFrame(np.array(res[2]).T,  index = ix, columns = dat_list[i]['columns'])
-        dat_list[i]['df'] = df_t
-        i = i + 1
+        df_t  = pd.DataFrame(np.array(res[2]).T,  index = ix, columns = input['sn'].keys())
+        dat_list.append({'fn': 'them_t.csv',   'title': '温度',  'unit': '[℃]', 'df': df_t})
 
     if len(res[3]) != 0:    
-        dat_list[i]       = {'columns': input['vn'].keys(), 'fn': 'vent_qv.csv',  'title': '風量',  'unit': '[m3/s]'}
-        df_qv             = pd.DataFrame(np.array(res[3]).T,  index = ix, columns = dat_list[i]['columns'])
-        dat_list[i]['df'] = df_qv
-        i = i + 1
+        df_qv  = pd.DataFrame(np.array(res[3]).T,  index = ix, columns = input['vn'].keys())
+        dat_list.append({'fn': 'vent_qv.csv',  'title': '風量',  'unit': '[m3/s]', 'df': df_qv})
 
     if len(res[4]) != 0:    
-        dat_list[i]       = {'columns': input['vn'].keys(), 'fn': 'thrm_qt1.csv', 'title': '熱量1', 'unit': '[W]'}
-        df_qt1            = pd.DataFrame(np.array(res[4]).T,  index = ix, columns = dat_list[i]['columns'])
-        dat_list[i]['df'] = df_qt1
-        i = i + 1
+        df_qt1 = pd.DataFrame(np.array(res[4]).T,  index = ix, columns = input['vn'].keys())
+        dat_list.append({'fn': 'thrm_qt1.csv', 'title': '熱量1', 'unit': '[W]', 'df': df_qt1})
 
     if len(res[5]) != 0:    
-        dat_list[i]       = {'columns': input['tn'].keys(), 'fn': 'thrm_qt2.csv', 'title': '熱量2', 'unit': '[W]'}
-        df_qt2            = pd.DataFrame(np.array(res[5]).T,  index = ix, columns = dat_list[i]['columns'])
-        dat_list[i]['df'] = df_qt2
-        i = i + 1
+        df_qt2 = pd.DataFrame(np.array(res[5]).T,  index = ix, columns = input['tn'].keys())
+        dat_list.append({'fn': 'thrm_qt2.csv', 'title': '熱量2', 'unit': '[W]', 'df': df_qt2})
 
     output_calc(dat_list, opt)
 
