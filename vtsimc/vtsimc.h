@@ -56,8 +56,6 @@ public:
         t_idc.clear();
         i_vn_ac.clear();
         i_tn_ac.clear();
-        //i_vn_ac = -1;
-        //i_tn_ac = -1;
     }
 
     void sn_add(int i, tuple<int, int, int> flag){
@@ -95,19 +93,19 @@ public:
     }
 
     void set_aircon_status(long ts, int i, int flag_){
-        if(tn[i_tn_ac[i]].aircon_on[ts] == AC_OFF && flag_ == AC_ON){
+        if(flag_ == AC_ON){
             tn[i_tn_ac[i]].aircon_on[ts] = AC_ON;
             change_sn_t_flag(tn[i_tn_ac[i]].i1, SN_FIX);
             vn[i_vn_ac[i]].vn_type = VN_AIRCON;
         }
-        else if(tn[i_tn_ac[i]].aircon_on[ts] == AC_ON && flag_ == AC_OFF){
+        else if(flag_ == AC_OFF){
             tn[i_tn_ac[i]].aircon_on[ts] = AC_OFF;
-            change_sn_t_flag(tn[i_tn_ac[i]].i1, SN_CALC);  
+            change_sn_t_flag(tn[i_tn_ac[i]].i1, SN_CALC);
             vn[i_vn_ac[i]].vn_type = VN_FIX;
         }
     }
 
-    vector<double> qv_sum(vector<double> p, long ts, int flag){
+    vector<double> qv_sum(vector<double> p, long ts){
         vector<double> qvsum(sn.size(), 0.0);                                                                             //風量収支の初期化                                 
         for(unsigned int i = 0; i < vn.size(); i++){
             double rgh1 = get_rho(sn[vn[i].i1].t[ts]) * G * vn[i].h1[ts];
@@ -116,9 +114,6 @@ public:
             qvsum[vn[i].i1] -= qv;                                                                                        //風量収支の計算
             qvsum[vn[i].i2] += qv;                                                                                        //風量収支の計算      
         }
-
-        for(unsigned int i = 0; i << sn.size(); i++)
-            if(flag == 0)   LOG_PRINT("i = " << i << " : " << qvsum[i] << endl);
         return qvsum;
     }
 
@@ -132,11 +127,11 @@ public:
         for(unsigned int i = 0; i < sn.size(); i++)    p0[sn[i].i] = sn[i].p[ts];                                                //圧力の初期化       
         do{
             rmse = 0.0;
-            qvsum_0 = qv_sum(p0, ts, 0);
+            qvsum_0 = qv_sum(p0, ts);
             
             for(unsigned int j = 0; j < v_idc.size(); j++){
                 p0[v_idc[j]] += sts.step_p;                                                                             //ダミー圧力の作成       
-                qvsum_d = qv_sum(p0, ts, 1);                                                                               //ダ三－風量収支の計算
+                qvsum_d = qv_sum(p0, ts);                                                                            //ダ三－風量収支の計算
                 for(unsigned int i = 0; i < v_idc.size(); i++)  a[i][j] = (qvsum_d[v_idc[i]] - qvsum_0[v_idc[i]]) / sts.step_p;  //aの計算
                 b[j] = -qvsum_0[v_idc[j]];
                 p0[v_idc[j]] -= sts.step_p; 
@@ -145,25 +140,25 @@ public:
             if(sts.solve == SOLVE_SOR)  dp = SOR(a, b, v_idc.size(), sts.sor_ratio, sts.sor_err);                       //SOR法による計算     
             else                        dp = LU(a, b, v_idc.size()); 
 
-            for(unsigned int i = 0; i < v_idc.size(); i++)   p0[v_idc[i]] += dp[i];                                              //圧力の更新
-            qvsum_0 = qv_sum(p0, ts, 2);    
+            for(unsigned int i = 0; i < v_idc.size(); i++)   p0[v_idc[i]] += dp[i];                                     //圧力の更新
+            qvsum_0 = qv_sum(p0, ts);    
             for(unsigned int i = 0; i < v_idc.size(); i++)   rmse += pow(qvsum_0[v_idc[i]], 2.0) / v_idc.size();
             LOG_PRINT(itr << ": ts = " << ts << ": rmse = " << sqrt(rmse) << endl);
             itr++;
         }while(sts.vent_err < sqrt(rmse));
-        for(unsigned int i = 0; i < v_idc.size(); i++)   sn[v_idc[i]].p[ts] = p0[v_idc[i]];                                      //圧力の計算                                                               
+        for(unsigned int i = 0; i < v_idc.size(); i++)   sn[v_idc[i]].p[ts] = p0[v_idc[i]];                             //圧力の計算                                                               
         return rmse;
     }
 
     vector<double> qt_sum(vector<double> t, long ts){
         vector<double> qtsum(sn.size(), 0.0);           
-       
-        for(unsigned int i = 0; i < vn.size(); i++){                                                                             //移流に伴う熱移動
+
+        for(unsigned int i = 0; i < vn.size(); i++){                                                                    //移流に伴う熱移動
             if(vn[i].qv[ts] > 0)            qtsum[vn[i].i2] += vn[i].get_qt(t[vn[i].i1] - t[vn[i].i2], ts);
             else                            qtsum[vn[i].i1] += vn[i].get_qt(t[vn[i].i1] - t[vn[i].i2], ts);
         }
 
-        for(unsigned int i = 0; i < tn.size(); i++){                                                                             //貫流、日射、発熱による熱移動
+        for(unsigned int i = 0; i < tn.size(); i++){                                                                    //貫流、日射、発熱による熱移動
             switch(tn[i].tn_type){
                 case TN_SIMPLE:
                 case TN_GROUND:
@@ -180,26 +175,26 @@ public:
         }
 
         for(unsigned int i = 0; i < i_tn_ac.size(); i++){
-            if(tn[i_tn_ac[i]].aircon_on[ts] == AC_ON){                                                        //エアコンによる温度調整
+            if(tn[i_tn_ac[i]].aircon_on[ts] == AC_ON){                                                                  //エアコンによる温度調整
                 qtsum[tn[i_tn_ac[i]].i2] -= qtsum[tn[i_tn_ac[i]].i1];
                 qtsum[tn[i_tn_ac[i]].i1]  = 0.0;
             }
         }
+
         return qtsum;
     }
 
     double calc_thrm(long ts){
         vector<double>          t0(sn.size()), qtsum_0(sn.size()), qtsum_d(sn.size());
-        vector<vector<double>>  a(t_idc.size() + 1, vector<double>(t_idc.size() + 1));                                  //エアコン分も余計に確保
-        vector<double>          b(t_idc.size() + 1), dt(t_idc.size() + 1);                                              //エアコン分も余計に確保
+        vector<vector<double>>  a(t_idc.size() + i_tn_ac.size(), vector<double>(t_idc.size() + i_tn_ac.size()));                                  //エアコン分も余計に確保
+        vector<double>          b(t_idc.size() + i_tn_ac.size()), dt(t_idc.size() + i_tn_ac.size());                                              //エアコン分も余計に確保
         double                  rmse;        
         int                     itr = 0;
 
-        for(unsigned int i = 0; i < sn.size(); i++)    t0[sn[i].i] = sn[i].t[ts];                                                //温度の初期化
-        
+        for(unsigned int i = 0; i < sn.size(); i++)     t0[sn[i].i] = sn[i].t[ts];                                      //温度の初期化
+
         do{
             for(unsigned int i = 0; i < i_tn_ac.size(); i++){
-                set_aircon_status(ts, i, AC_ON);                                                                           //全部ONになってない？？
                 if(itr == 0)    set_aircon_status(ts, i, AC_OFF);
                 else{
                     switch(tn[i_tn_ac[i]].ac_mode[ts]){
@@ -224,10 +219,10 @@ public:
                 t0[t_idc[j]] -= sts.step_t;                                                                             //ダミー温度を戻す
             }
 
-            if(sts.solve == SOLVE_SOR)  dt = SOR(a, b, t_idc.size(), sts.sor_ratio, sts.sor_err);                                   //SOR法による計算
+            if(sts.solve == SOLVE_SOR)  dt = SOR(a, b, t_idc.size(), sts.sor_ratio, sts.sor_err);                       //SOR法による計算
             else                        dt = LU(a, b, t_idc.size());
 
-            for(unsigned int i = 0; i < t_idc.size(); i++)   t0[t_idc[i]] += dt[i];                                              //温度の更新
+            for(unsigned int i = 0; i < t_idc.size(); i++)   t0[t_idc[i]] += dt[i];                                     //温度の更新
             qtsum_0 = qt_sum(t0, ts);
             for(unsigned int i = 0; i < t_idc.size(); i++)   rmse += pow(qtsum_0[t_idc[i]], 2.0) / t_idc.size(); 
 
@@ -254,7 +249,8 @@ public:
             itr++;
         }while(sts.thrm_err < sqrt(rmse));
 
-        for(unsigned int i = 0; i < t_idc.size(); i++)   sn[t_idc[i]].t[ts] = t0[t_idc[i]];                                          //温度の計算
+        for(unsigned int i = 0; i < t_idc.size(); i++)      sn[t_idc[i]].t[ts] = t0[t_idc[i]];                          //温度の計算
+        for(unsigned int i = 0; i < i_tn_ac.size(); i++)    sn[tn[i_tn_ac[i]].i1].t[ts] = t0[tn[i_tn_ac[i]].i1];              //エアコン設定温度ノードの温度を更新
         return rmse;
     }
 
@@ -263,7 +259,7 @@ public:
         for(unsigned int i = 0; i < vn.size(); i++){    
             double rgh1 = get_rho(sn[vn[i].i1].t[ts2]) * G * vn[i].h1[ts2];
             double rgh2 = get_rho(sn[vn[i].i2].t[ts2]) * G * vn[i].h2[ts2];
-            vn[i].qv[ts1] = vn[i].get_qv((sn[vn[i].i1].p[ts2] - rgh1) - (sn[vn[i].i2].p[ts2] - rgh2), ts2);                 //風量の計算
+            vn[i].qv[ts1] = vn[i].get_qv((sn[vn[i].i1].p[ts2] - rgh1) - (sn[vn[i].i2].p[ts2] - rgh2), ts2);             //風量の計算
         }
     }
 
@@ -281,7 +277,7 @@ public:
             }
         }
         for(unsigned int i = 0; i < vn.size(); i++)
-            vn[i].qt[ts1] = vn[i].get_qt(sn[vn[i].i1].t[ts2] - sn[vn[i].i2].t[ts2], ts2);                                   //熱量の計算
+            vn[i].qt[ts1] = vn[i].get_qt(sn[vn[i].i1].t[ts2] - sn[vn[i].i2].t[ts2], ts2);                               //熱量の計算
     }
 
     int calc(){
@@ -314,7 +310,7 @@ public:
         }
         for(unsigned int i = 0; i < vn.size(); i++){
             LOG_PRINT("vn[" << i << "] = " << vn[i].vn_type << " (" << vn[i].i1 << "," << vn[i].i2  << ") " << vn[i].h1[0] << " - " << vn[i].h2[0]);
-            LOG_CONTENTS(",qv[0]=" << vn[i].qv[0] << ",qt[0]=" << vn[i].qt[0]); 
+            LOG_CONTENTS(", qv[0]=" << vn[i].qv[0] << ",qt[0]=" << vn[i].qt[0]); 
             if(vn[i].alpha.size() != 0) LOG_CONTENTS(", alpha[0]=" << vn[i].alpha[0]);
             if(vn[i].area.size()  != 0) LOG_CONTENTS(", area[0]="  << vn[i].area[0]);
             if(vn[i].a.size()     != 0) LOG_CONTENTS(", a[0]="     << vn[i].a[0]);
@@ -329,7 +325,7 @@ public:
 
         for(unsigned int i = 0; i < tn.size(); i++){
             LOG_PRINT("tn[" << i << "] = " << tn[i].tn_type << " (" << tn[i].i1 << "," << tn[i].i2 << ")");
-            LOG_CONTENTS(",qt[0]=" << tn[i].qt[0]);
+            LOG_CONTENTS(", qt[0]=" << tn[i].qt[0]);
             if(tn[i].cdtc.size()      != 0) LOG_CONTENTS(", cdtc[0]="      << tn[i].cdtc[0]);
             if(tn[i].ms.size()        != 0) LOG_CONTENTS(", ms[0]="        << tn[i].ms[0]);
             if(tn[i].area.size()      != 0) LOG_CONTENTS(", area[0]="      << tn[i].area[0]);
@@ -338,16 +334,16 @@ public:
             if(tn[i].cof_phi.size()   != 0) LOG_CONTENTS(", cof_phi[0]="   << tn[i].cof_phi[0]);
             if(tn[i].t_dash_gs.size() != 0) LOG_CONTENTS(", t_dash_gs[0]=" << tn[i].t_dash_gs[0]);
             if(tn[i].aircon_on.size() != 0) LOG_CONTENTS(", aircon_on[0]=" << tn[i].aircon_on[0]);
-            if(tn[i].ac_mode.size()   != 0) LOG_CONTENTS(", alpha[0]="     << tn[i].ac_mode[0]);
-            if(tn[i].pre_tmp.size()   != 0) LOG_CONTENTS(", alpha[0]="     << tn[i].pre_tmp[0]);
+            if(tn[i].ac_mode.size()   != 0) LOG_CONTENTS(", ac_mode[0]="   << tn[i].ac_mode[0]);
+            if(tn[i].pre_tmp.size()   != 0) LOG_CONTENTS(", pre_tmp[0]="   << tn[i].pre_tmp[0]);
             LOG_CONTENTS(endl);
         }
 
-        LOG_PRINT("i_vn_ac = ")
+        LOG_PRINT("i_vn_ac = ");
         for(unsigned int i = 0; i < i_vn_ac.size(); i++) LOG_CONTENTS(" " << i_vn_ac[i]);
         LOG_CONTENTS(endl);
 
-        LOG_PRINT("i_tn_ac = ")
+        LOG_PRINT("i_tn_ac = ");
         for(unsigned int i = 0; i < i_tn_ac.size(); i++) LOG_CONTENTS(" " << i_tn_ac[i]);
         LOG_CONTENTS(endl);
         
