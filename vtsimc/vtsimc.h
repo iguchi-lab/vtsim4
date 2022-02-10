@@ -43,7 +43,6 @@ public:
     vector<Thrm_Net> tn;                                    //熱回路網
     vector<int> v_idc, c_idc, t_idc;
     vector<int> i_vn_ac, i_tn_ac;
-    //int i_vn_ac = -1, i_tn_ac = -1;
 
     void setup(CalcStatus sts_){
         sts = sts_;
