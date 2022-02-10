@@ -250,7 +250,7 @@ def set_aircon1(input):
         n1 = aircon[ac]['in']  if 'in'  in aircon[ac] else aircon[ac]['set']
         n2 = aircon[ac]['out'] if 'out' in aircon[ac] else aircon[ac]['set']
     
-        input['sn'][ac_in]            = {}
+        input['sn'][ac_in]            = {'t_flag': vt.SN_CALC}
         input['sn'][ac_out]           = {'t_flag': vt.SN_CALC}
 
         vol = aircon[ac]['vol'] if 'vol' in aircon[ac] else 1000 / 3600
