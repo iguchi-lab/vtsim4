@@ -180,26 +180,48 @@ def run_calc(input):                                                            
 
     opt = input['opt'] if 'opt' in input else OPT_GRAPH
 
-    dat_list  = [{'columns': input['sn'].keys(), 'fn': 'vent_p.csv',   'title': '圧力',  'unit': '[Pa]'},
-                 {'columns': input['sn'].keys(), 'fn': 'vent_c.csv',   'title': '濃度',  'unit': '[個/L]'},
-                 {'columns': input['sn'].keys(), 'fn': 'them_t.csv',   'title': '温度',  'unit': '[℃]'},
-                 {'columns': input['vn'].keys(), 'fn': 'vent_qv.csv',  'title': '風量',  'unit': '[m3/s]'},
-                 {'columns': input['vn'].keys(), 'fn': 'thrm_qt1.csv', 'title': '熱量1', 'unit': '[W]'},
-                 {'columns': input['tn'].keys(), 'fn': 'thrm_qt2.csv', 'title': '熱量2', 'unit': '[W]'}]
-
     ix = pd.to_datetime(input['index'], format='%Y/%m/%d %H:%M:%S')
     res = calc.result()
+    dat_list = []
 
-    for i, d in enumerate(dat_list):
-        if len(res[i]) != 0: d['df'] = pd.DataFrame(np.array(res[i]).T,  index = ix, columns = d['columns'])
-
+    i = 0
     global df_p, df_c, df_t, df_qv, df_qt1, df_qt2
-    df_p   = dat_list[0]['df']
-    df_c   = dat_list[1]['df']
-    df_t   = dat_list[2]['df'] 
-    df_qv  = dat_list[3]['df']
-    df_qt1 = dat_list[4]['df']
-    df_qt2 = dat_list[5]['df']
+
+    if len(res[0]) != 0:    
+        dat_list[i]       = {'columns': input['sn'].keys(), 'fn': 'vent_p.csv',   'title': '圧力',  'unit': '[Pa]'}
+        df_p              = pd.DataFrame(np.array(res[0]).T,  index = ix, columns = dat_list[i]['columns'])
+        dat_list[i]['df'] = df_p
+        i = i + 1
+
+    if len(res[1]) != 0:    
+        dat_list[i]       = {'columns': input['sn'].keys(), 'fn': 'vent_c.csv',   'title': '濃度',  'unit': '[個/L]'}
+        df_c              = pd.DataFrame(np.array(res[1]).T,  index = ix, columns = dat_list[i]['columns'])
+        dat_list[i]['df'] = df_p
+        i = i + 1
+
+    if len(res[2]) != 0:    
+        dat_list[i]       = {'columns': input['sn'].keys(), 'fn': 'them_t.csv',   'title': '温度',  'unit': '[℃]'}
+        df_t              = pd.DataFrame(np.array(res[2]).T,  index = ix, columns = dat_list[i]['columns'])
+        dat_list[i]['df'] = df_t
+        i = i + 1
+
+    if len(res[3]) != 0:    
+        dat_list[i]       = {'columns': input['vn'].keys(), 'fn': 'vent_qv.csv',  'title': '風量',  'unit': '[m3/s]'}
+        df_qv             = pd.DataFrame(np.array(res[3]).T,  index = ix, columns = dat_list[i]['columns'])
+        dat_list[i]['df'] = df_qv
+        i = i + 1
+
+    if len(res[4]) != 0:    
+        dat_list[i]       = {'columns': input['vn'].keys(), 'fn': 'thrm_qt1.csv', 'title': '熱量1', 'unit': '[W]'}
+        df_qt1            = pd.DataFrame(np.array(res[4]).T,  index = ix, columns = dat_list[i]['columns'])
+        dat_list[i]['df'] = df_qt1
+        i = i + 1
+
+    if len(res[5]) != 0:    
+        dat_list[i]       = {'columns': input['tn'].keys(), 'fn': 'thrm_qt2.csv', 'title': '熱量2', 'unit': '[W]'}
+        df_qt2            = pd.DataFrame(np.array(res[5]).T,  index = ix, columns = dat_list[i]['columns'])
+        dat_list[i]['df'] = df_qt2
+        i = i + 1
 
     output_calc(dat_list, opt)
 
@@ -241,7 +263,6 @@ def add_capa(input):
 
 def set_aircon1(input):
     aircon = input['aircon']
-
     for ac in [ac for ac in aircon]:
         ac_in, ac_out = ac + '_in', ac + '_out'
 
@@ -271,7 +292,6 @@ def set_aircon2(input):
         for i, nt in enumerate(calc.vn):
             if nt.vn_type == vt.VN_AIRCON:
                 if (calc.node[ac_in] == nt.i1) and (calc.node[ac_out] == nt.i2):    calc.vn_aircon_add(i)
-        
         for i, nt in enumerate(calc.tn):
             if nt.tn_type == vt.TN_AIRCON:
                 if (calc.node[n3]    == nt.i1) and (calc.node[ac_out] == nt.i2):    calc.tn_aircon_add(i)
@@ -307,7 +327,6 @@ def get_n1n2(nt):
 
 def set_vent_net(vn):
     for i, nt in enumerate(vn):
-        
         if 'type' not in vn[nt]:
             if   ('alpha'  in vn[nt]) and ('area' in vn[nt]):  vn_type = vt.VN_SIMPLE
             elif ('a'      in vn[nt]) and ('n'    in vn[nt]):  vn_type = vt.VN_GAP
@@ -320,7 +339,6 @@ def set_vent_net(vn):
 
         h1 = to_list_f(vn[nt]['h1']) if 'h1' in vn[nt] else to_list_f(0.0)                          #高さ1、行列設定不可
         h2 = to_list_f(vn[nt]['h2']) if 'h2' in vn[nt] else to_list_f(0.0)                          #高さ2、行列設定不可
-        
         n1, n2 = get_n1n2(nt)
         calc.vn_add(i, calc.node[n1], calc.node[n2], vn_type, h1, h2)
         
@@ -339,13 +357,10 @@ def set_vent_net(vn):
             calc.vn[i].p_max = to_list_f(vn[nt]['pmax']) 
             calc.vn[i].q1    = to_list_f(vn[nt]['q1'])
             calc.vn[i].p1    = to_list_f(vn[nt]['p1'])                                              #ファン、行列で設定可能
-#        if vn_type == vt.VN_AIRCON:
-#            calc.vn_aircon_add(i)
         calc.vn[i].eta = to_list_f(vn[nt]['eta']) if 'eta' in vn[nt] else to_list_f(0.0)            #粉じん除去率、行列で設定可能
 
 def set_thrm_net(tn):
     for i, nt in enumerate(tn):
-
         if 'type' not in tn[nt]:
             if    'ms'       in tn[nt]:                            tn_type = vt.TN_SOLAR
             elif ('phi_0'    in tn[nt]) and ('cof_r'   in tn[nt]): tn_type = vt.TN_GROUND
@@ -363,7 +378,6 @@ def set_thrm_net(tn):
         if tn_type == vt.TN_AIRCON:
             calc.tn[i].ac_mode = to_list_i(tn[nt]['ac_mode']) 
             calc.tn[i].pre_tmp = to_list_f(tn[nt]['pre_tmp'])                          #エアコン運転モード
-            #calc.tn_aircon_add(i)
         if tn_type == vt.TN_SOLAR:       
             calc.tn[i].ms      = to_list_f(tn[nt]['ms'])                               #日射熱取得率、行列設定可能
         if tn_type == vt.TN_GROUND:     
@@ -374,7 +388,6 @@ def set_thrm_net(tn):
             calc.tn[i].cof_phi = tn[nt]['cof_phi']                                     #地盤熱応答、行列設定不可（面積と断熱性能はOK）         
 
 def output_calc(dat_list, opt):
-
     if opt == OPT_CSV or opt == OPT_GRAPH:
         logger.info('Output csv files.')
         for d in dat_list:      d['df'].to_csv(d['fn'], encoding = 'utf_8_sig')
