@@ -18,7 +18,7 @@ from datetime import datetime
 
 # loggerに命名する. この名前で呼び出すことで他のモジュールにも以下の設定が引き継がれる.
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 # コンソールに出力するハンドラの設定
 sh = logging.StreamHandler()
@@ -76,6 +76,10 @@ AC_STOP:    int = vt.AC_STOP
 read_csv = lambda fn:   pd.read_csv(fn, index_col = 0, parse_dates = True).fillna(method = 'bfill')\
                                                                           .fillna(method = 'ffill')     #csvファイルの読み込み
 
+index    = lambda freq, length:   pd.DataFrame(index = pd.date_range(datetime(2021, 1, 1, 0, 0, 0), 
+                                               datetime(2021, 1, 1, 0, 0, 0) + timedelta(seconds = length), 
+                                               freq = freq)).index                                      #頻度freq、長さlengthのindex
+
 df   = lambda length:   pd.DataFrame(index = pd.date_range(datetime(2021, 1, 1, 0, 0, 0), 
                                      datetime(2021, 1, 1, 0, 0, 0) + timedelta(seconds = length), 
                                      freq='1s'))                                                        #長さlength、1s毎の時刻
@@ -90,6 +94,33 @@ def read_json(fn):                                                              
     with open(fn) as f:
         input = json.load(f)
     return input
+
+def read_hasp(fn):
+    df = pd.DataFrame()
+    str_dat = [''] * 7
+    clm = ['t_ex', 'h_ex', 'i_b', 'i_d', 'n_r', 'w_d', 'w_s']
+
+    with open(fn, 'rb') as f:
+        dat = [s.decode() for s in f.readlines()]
+
+    for d in range(365):    
+        for i in range(7): 
+            str_dat[i] += dat[d * 7 + i][:72]
+
+    for c in range(7):
+        df[clm[c]] = [int(str_dat[c][i * 3:i * 3 + 3]) for i in range(24 * 365)]
+
+    df['t_ex'] = (df['t_ex'] - 500) / 10  #気温             Exteria Temperature       ℃
+    df['h_ex'] = df['h_ex'] / 10          #重量絶対湿度     Exteria Humidity          g/kg'
+    df['i_b']  = df['i_b'] * 1.16222      #法線面直達日射   Direct Solar Insolation   kcal/(m2・h) -> W/m2 
+    df['i_d']  = df['i_d'] * 1.16222      #水平面拡散日射量 Diffuse Solar Insolation  kcal/(m2・h) -> W/m2
+    df['n_r']  = df['n_r'] * 1.16222      #夜間放射         Nocturnal Radiation       kcal/(m2・h) -> W/m2
+    df['w_d'].astype(int)                 #風向             Wind Direction
+                                          #0:無風,  1:NNE,  2:NE,   3:ENE, 4:E,    5:ESE,  6:SE,   7:SSE,  8:S
+                                          #9:SSW,  10:SW,  11:WSW, 12:W,  13:WNW, 14:NW,  15:NNW, 16:N
+    df['w_s']  = df['w_s'] / 10           #風速             Wind Speed                m/s
+
+    return df
 
 def write_json(input, fn):                                                                              #dict型をJSONファイルに書き出し
     input['version'] = '4.0.0'
@@ -143,12 +174,18 @@ def run_calc(input):                                                            
     logger.info('Set Aircon1.')
     if 'aircon' in input:   input = set_aircon1(input)                                   #エアコンをセット
 
+    logger.info('Set Solar.')
+    if 'solar' in input:    input = set_solar(input)
+
+    logger.info('Set Heater.')
+    if 'heater' in input:   input = set_heater(input)
+
     #with open('calc.json', 'w') as f:                                                   #計算入力を　calc.jsonに格納
     #    json.dump(input, f, ensure_ascii = False, indent = 4)
 
     logger.info('Set SimNode.')
     if 'sn' in input:       set_sim_node(input['sn'])                                   #sn（ノード）の設定
-    else:                   raise Exception('ERROR: ノード(sn)が存在しません。')            #sn（ノード）が無ければエラー
+    else:                   raise Exception('ERROR: ノード(sn)が存在しません。')         #sn（ノード）が無ければエラー
 
     logger.info('Set VentNet.')
     if 'vn' in input:       set_vent_net(input['vn'])                                   #vn（換気回路網）の設定
@@ -250,7 +287,7 @@ def add_capa(input):
 
 def set_aircon1(input):
     aircon = input['aircon']
-    for ac in [ac for ac in aircon]:
+    for ac in aircon:
         ac_in, ac_out = ac + '_in', ac + '_out'
 
         if 'set' in aircon[ac]:     n3 = aircon[ac]['set']
@@ -271,9 +308,28 @@ def set_aircon1(input):
     
     return input
 
+def set_solar(input):
+    name = ['Ins_T_H', 'Ins_W_E', 'Ins_W_S', 'Ins_W_W', 'Ins_W_N', 'Ins_W_H',
+                       'Ins_G_E', 'Ins_G_S', 'Ins_G_W', 'Ins_G_N', 'Ins_G_H'] 
+    solar = input['solar']
+    
+    for sl in solar:
+        for n in name:
+            if n in sl: input['sn'][n] = {'insolation': to_list_f(solar[sl])}
+
+    return input
+
+def set_heater(input):
+    heater = input['heater']
+
+    for ht in heater:
+        input['sn'][ht] = {'h_input': to_list_f(heater[ht]['h_input'])}
+
+    return input
+
 def set_aircon2(input):
     aircon = input['aircon']
-    for ac in [ac for ac in aircon]:
+    for ac in aircon:
         ac_in, ac_out, n3 = ac + '_in', ac + '_out', aircon[ac]['set']
 
         for i, nt in enumerate(calc.vn):
@@ -291,15 +347,15 @@ def set_sim_node(sn):
         t_flag = sn[n]['t_flag'] if 't_flag' in sn[n] else vt.SN_NONE
         calc.sn_add(i, [v_flag, c_flag, t_flag])
 
-        if 'p'     in sn[n]:    calc.sn[i].p     = to_list_f(sn[n]['p'])                    #圧力、行列で設定可能
-        if 'c'     in sn[n]:    calc.sn[i].c     = to_list_f(sn[n]['c'])                    #濃度、行列で設定可能
-        if 't'     in sn[n]:    calc.sn[i].t     = to_list_f(sn[n]['t'])                    #温度、行列で設定可能
-        if 'h_sr'  in sn[n]:    calc.sn[i].h_sr  = to_list_f(sn[n]['h_sr'])                 #日射量、行列で設定可能
-        if 'h_inp' in sn[n]:    calc.sn[i].h_inp = to_list_f(sn[n]['h_inp'])                #発熱、行列で設定可能
-        if 'v'     in sn[n]:    calc.sn[i].v     = to_list_f(sn[n]['v'])                    #気積、行列で設定可能
-        if 'm'     in sn[n]:    calc.sn[i].m     = to_list_f(sn[n]['m'])                    #発生量、行列で設定可能
-        if 'beta'  in sn[n]:    calc.sn[i].beta  = to_list_f(sn[n]['beta'])                 #濃度減少率、行列で設定可能
-        if 's_i'   in sn[n]:    calc.sn[i].s_i   = calc.node[sn[n]['s_i']]
+        if 'p'           in sn[n]:    calc.sn[i].p     = to_list_f(sn[n]['p'])                    #圧力、行列で設定可能
+        if 'c'           in sn[n]:    calc.sn[i].c     = to_list_f(sn[n]['c'])                    #濃度、行列で設定可能
+        if 't'           in sn[n]:    calc.sn[i].t     = to_list_f(sn[n]['t'])                    #温度、行列で設定可能
+        if 'insolation'  in sn[n]:    calc.sn[i].h_sr  = to_list_f(sn[n]['insolation'])           #日射量、行列で設定可能
+        if 'h_input'     in sn[n]:    calc.sn[i].h_inp = to_list_f(sn[n]['h_input'])              #発熱、行列で設定可能
+        if 'v'           in sn[n]:    calc.sn[i].v     = to_list_f(sn[n]['v'])                    #気積、行列で設定可能
+        if 'm'           in sn[n]:    calc.sn[i].m     = to_list_f(sn[n]['m'])                    #発生量、行列で設定可能
+        if 'beta'        in sn[n]:    calc.sn[i].beta  = to_list_f(sn[n]['beta'])                 #濃度減少率、行列で設定可能
+        if 's_i'         in sn[n]:    calc.sn[i].s_i   = calc.node[sn[n]['s_i']]
 
 def get_n1n2(nt):  
     s = nt.replace(' ', '')
