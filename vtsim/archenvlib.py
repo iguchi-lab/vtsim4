@@ -87,7 +87,7 @@ cos_AZs = lambda s_h, L, dd, c_h: (s_h * sin(L) - sin(dd)) / (c_h * cos(L))     
 
 def sun_loc(idx, lat = 36.00, lon = 140.00, td = -0.5):
     df = pd.DataFrame(index = idx)
-    df['N']       = [(i - datetime.datetime(i.year, 1, 1)).days + 1.5 for i in idx]                                  #元日からの通し日数
+    df['N']       = [(i - datetime.datetime(i.year, 1, 1)).days + 1.5 for i in idx]                                     #元日からの通し日数
     df['H']       = idx.strftime("%H").astype('float64') + td                                                           #時刻
     df['delta_d'] = delta_d(df['N'])                                                                                    #太陽の赤緯
     df['e_d']     = e_d(df['N'])                                                                                        #太陽の均時差
@@ -166,19 +166,30 @@ def direc_solar(s_ib, s_id, s_sin_hs, s_cos_hs, s_hs, s_sin_AZs, s_cos_AZs, s_AZ
     df_i['Id_D_g'] = df_i['Id_D'] * 0.808                                                                                                   #拡散   D
     df_i['Id_R_g'] = df_i['Id_R'] * 0.808                                                                                                   #反射   R
 
+    df_i['Ins_W_E'] = df_i['Ib_E']   + df_i['Id_D']   + df_i['Id_R']
+    df_i['Ins_G_E'] = df_i['Ib_E_g'] + df_i['Id_D_g'] + df_i['Id_R_g']
+    df_i['Ins_W_S'] = df_i['Ib_S']   + df_i['Id_D']   + df_i['Id_R']
+    df_i['Ins_G_S'] = df_i['Ib_S_g'] + df_i['Id_D_g'] + df_i['Id_R_g']
+    df_i['Ins_W_W'] = df_i['Ib_W']   + df_i['Id_D']   + df_i['Id_R']
+    df_i['Ins_G_W'] = df_i['Ib_W_g'] + df_i['Id_D_g'] + df_i['Id_R_g']
+    df_i['Ins_W_N'] = df_i['Ib_N']   + df_i['Id_D']   + df_i['Id_R']
+    df_i['Ins_G_N'] = df_i['Ib_N_g'] + df_i['Id_D_g'] + df_i['Id_R_g']
+    df_i['Ins_W_H'] = df_i['Ib_H']   + df_i['Id_D']   + df_i['Id_R']
+    df_i['Ins_G_H'] = df_i['Ib_H_g'] + df_i['Id_D_g'] + df_i['Id_R_g']
+
     return(df_i.fillna(0))
 
 def make_solar1(s_ig):
-    df_i = pd.concat([s_ig, sun_loc(s_ig.index)], axis = 1)
-    df_i = pd.concat([df_i, sep_direct_diffuse(s_ig, df_i['hs'])], axis = 1)
-    df_i = direc_solar(df_i['Ib'], df_i['Id'],
+    df_i = pd.concat([s_ig, sun_loc(s_ig.index, lat = 36.00, lon = 140.00, td = -0.5)], axis = 1)                                                 #太陽位置の追加
+    df_i = pd.concat([df_i, sep_direct_diffuse(s_ig, df_i['hs'])], axis = 1)                                #直散分離結果の追加
+    df_i = direc_solar(df_i['Ib'], df_i['Id'],                                                              #方位別日射量の追加
                        df_i['sin_hs'], df_i['cos_hs'], df_i['hs'], 
                        df_i['sin_AZs'], df_i['cos_AZs'], df_i['AZs'])
     return(df_i.fillna(0))
 
 def make_solar2(s_ib, s_id):
-    df_i = pd.concat([s_ib, s_id, sun_loc(s_ib.index)], axis = 1)
-    df_i = direc_solar(df_i['Ib'], df_i['Id'], 
+    df_i = pd.concat([s_ib, s_id, sun_loc(s_ib.index, lat = 36.00, lon = 140.00, td = -0.5)], axis = 1)                                           #太陽位置の追加
+    df_i = direc_solar(df_i['Ib'], df_i['Id'],                                                              #方位別日射量の追加
                        df_i['sin_hs'], df_i['cos_hs'], df_i['hs'], 
                        df_i['sin_AZs'], df_i['cos_AZs'], df_i['AZs'])
     return(df_i.fillna(0))
