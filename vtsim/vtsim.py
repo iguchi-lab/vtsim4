@@ -323,7 +323,7 @@ def set_heater(input):
     heater = input['heater']
 
     for ht in heater:
-        input['sn'][ht] = {'h_input': to_list_f(heater[ht]['h_input'])}
+        input['sn'][ht] = {'h_input': to_list_f(heater[ht])}
 
     return input
 
