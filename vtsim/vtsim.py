@@ -91,7 +91,7 @@ def encode(object):                                                             
         return(object.to_list())
 
 def read_json(fn):                                                                                      #JSON形式を読み込みdict型で返す
-    with open(fn) as f:
+    with open(fn, encoding = "utf-8") as f:
         input = json.load(f)
     return input
 
@@ -426,7 +426,6 @@ def set_thrm_net(tn):
             calc.tn[i].ms      = to_list_f(tn[nt]['ms'])                               #日射熱取得率、行列設定可能
         if tn_type == vt.TN_GROUND:     
             calc.tn[i].area    = to_list_f(tn[nt]['area'])           
-            calc.tn[i].rg      = to_list_f(tn[nt]['rg']) 
             calc.tn[i].phi_0   = tn[nt]['phi_0']
             calc.tn[i].cof_r   = tn[nt]['cof_r']
             calc.tn[i].cof_phi = tn[nt]['cof_phi']                                     #地盤熱応答、行列設定不可（面積と断熱性能はOK）         
