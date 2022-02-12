@@ -189,14 +189,40 @@ def make_solar1(s_ig):
     df_i = direc_solar(df_i['Ib'], df_i['Id'],                                                              #方位別日射量の追加
                        df_i['sin_hs'], df_i['cos_hs'], df_i['hs'], 
                        df_i['sin_AZs'], df_i['cos_AZs'], df_i['AZs'])
-    return(df_i.fillna(0))
+    solar =     {
+        'Ins_W_E': df_i['Ins_W_E'],
+        'Ins_G_E': df_i['Ins_G_E'],
+        'Ins_W_S': df_i['Ins_W_S'],
+        'Ins_G_S': df_i['Ins_G_S'],
+        'Ins_W_W': df_i['Ins_W_W'],
+        'Ins_G_W': df_i['Ins_G_W'],
+        'Ins_W_N': df_i['Ins_W_N'],
+        'Ins_G_N': df_i['Ins_G_N'],
+        'Ins_W_H': df_i['Ins_W_H'],
+        'Ins_G_H': df_i['Ins_G_H']
+    }
+    
+    return(df_i, solar)
 
 def make_solar2(s_ib, s_id):
     df_i = pd.concat([s_ib, s_id, sun_loc(s_ib.index, lat = 36.00, lon = 140.00, td = -0.5)], axis = 1)                                           #太陽位置の追加
     df_i = direc_solar(df_i['Ib'], df_i['Id'],                                                              #方位別日射量の追加
                        df_i['sin_hs'], df_i['cos_hs'], df_i['hs'], 
                        df_i['sin_AZs'], df_i['cos_AZs'], df_i['AZs'])
-    return(df_i.fillna(0))
+    solar =     {
+        'Ins_W_E': df_i['Ins_W_E'],
+        'Ins_G_E': df_i['Ins_G_E'],
+        'Ins_W_S': df_i['Ins_W_S'],
+        'Ins_G_S': df_i['Ins_G_S'],
+        'Ins_W_W': df_i['Ins_W_W'],
+        'Ins_G_W': df_i['Ins_G_W'],
+        'Ins_W_N': df_i['Ins_W_N'],
+        'Ins_G_N': df_i['Ins_G_N'],
+        'Ins_W_H': df_i['Ins_W_H'],
+        'Ins_G_H': df_i['Ins_G_H']
+    }
+
+    return(df_i, solar)
 
 #calc PMV PPD
 calc_R  = lambda f_cl, t_cl, t_r:               3.96e-8 * f_cl * (math.pow(t_cl + 273, 4) - math.pow(t_r + 273, 4))
