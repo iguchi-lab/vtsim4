@@ -328,7 +328,6 @@ public:
             if(tn[i].cdtc.size()      != 0) LOG_CONTENTS(", cdtc[0]="      << tn[i].cdtc[0]);
             if(tn[i].ms.size()        != 0) LOG_CONTENTS(", ms[0]="        << tn[i].ms[0]);
             if(tn[i].area.size()      != 0) LOG_CONTENTS(", area[0]="      << tn[i].area[0]);
-            if(tn[i].rg.size()        != 0) LOG_CONTENTS(", rg[0]="        << tn[i].rg[0]);
             if(tn[i].cof_r.size()     != 0) LOG_CONTENTS(", cof_r[0]="     << tn[i].cof_r[0]);
             if(tn[i].cof_phi.size()   != 0) LOG_CONTENTS(", cof_phi[0]="   << tn[i].cof_phi[0]);
             if(tn[i].t_dash_gs.size() != 0) LOG_CONTENTS(", t_dash_gs[0]=" << tn[i].t_dash_gs[0]);
