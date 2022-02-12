@@ -158,6 +158,8 @@ def direc_solar(s_ib, s_id, s_sin_hs, s_cos_hs, s_hs, s_sin_AZs, s_cos_AZs, s_AZ
 
     eta = lambda c: + 2.3920 * c -3.8636 * c * c * c + 3.7568 * c * c * c * c * c - 1.3968 * c * c * c * c * c * c * c 
 
+    df_i = df_i.fillna(0)
+
     df_i['Ib_E_g'] = df_i['Ib_E'] * eta(-1 * df_i['cos_hs'] * df_i['sin_AZs'])                                                              #東面   E
     df_i['Ib_S_g'] = df_i['Ib_S'] * eta(     df_i['cos_hs'] * df_i['cos_AZs'])                                                              #南面   S
     df_i['Ib_W_g'] = df_i['Ib_W'] * eta(     df_i['cos_hs'] * df_i['sin_AZs'])                                                              #西面   W
@@ -166,7 +168,7 @@ def direc_solar(s_ib, s_id, s_sin_hs, s_cos_hs, s_hs, s_sin_AZs, s_cos_AZs, s_AZ
     df_i['Id_D_g'] = df_i['Id_D'] * 0.808                                                                                                   #拡散   D
     df_i['Id_R_g'] = df_i['Id_R'] * 0.808                                                                                                   #反射   R
 
-    df_i.fillna(0)
+    df_i = df_i.fillna(0)
 
     df_i['Ins_W_E'] = df_i['Ib_E']   + df_i['Id_D']   + df_i['Id_R']
     df_i['Ins_G_E'] = df_i['Ib_E_g'] + df_i['Id_D_g'] + df_i['Id_R_g']
