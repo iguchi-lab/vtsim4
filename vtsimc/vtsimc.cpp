@@ -119,7 +119,6 @@ PYBIND11_MODULE(vtsimc, m){
         .def_readwrite("cdtc",      &Thrm_Net::cdtc,      "")
         .def_readwrite("ms",        &Thrm_Net::ms,        "")
         .def_readwrite("area",      &Thrm_Net::area,      "")
-        .def_readwrite("rg",        &Thrm_Net::rg,        "")
         .def_readwrite("phi_0",     &Thrm_Net::phi_0,     "")
         .def_readwrite("cof_r",     &Thrm_Net::cof_r,     "")
         .def_readwrite("cof_phi",   &Thrm_Net::cof_phi,   "")
