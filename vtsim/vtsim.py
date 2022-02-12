@@ -409,6 +409,7 @@ def set_thrm_net(tn):
             elif ('phi_0'    in tn[nt]) and ('cof_r'   in tn[nt]): tn_type = vt.TN_GROUND
             elif ('ac_mode'  in tn[nt]) and ('pre_tmp' in tn[nt]): tn_type = vt.TN_AIRCON
             elif  'cdtc'     in tn[nt]:                            tn_type = vt.TN_SIMPLE
+            elif tn[nt] == {}:                                     tn_type = vt.TN_HEATER
             else:                                                  raise Exception('ERROR: ' + nt + 'のtn_typeを認識できません') 
         else:
             tn_type = tn[nt]['type']
