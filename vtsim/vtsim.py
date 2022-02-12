@@ -125,7 +125,7 @@ def read_hasp(fn):
 def write_json(input, fn):                                                                              #dict型をJSONファイルに書き出し
     input['version'] = '4.0.0'
     with open(fn, 'w') as f:
-        json.dump(input, f, default = encode, ensure_ascii = False, indent = 4)
+        json.dump(input, f, default = encode, encode = 'utf-8_sig', ensure_ascii = False, indent = 4)
 
 def to_json(input):                                                                                     #dict型をJSON形式に変換
     input['version'] = '4.0.0'
