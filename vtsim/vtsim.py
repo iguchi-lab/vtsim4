@@ -170,6 +170,9 @@ def run_calc(input):                                                            
     logger.info('Set Ground.')
     if 'ground' in input:   input = set_ground(input)
 
+    logger.info('set Outer Wall')
+    if 'outer wall' in input:   input = set_outer_wall(input)
+
     logger.info('Add Capacity.')   
     if 'sn' in input:       input = add_capa(input)                                     #熱容量を設定
     else:                   raise Exception('ERROR: ノード(sn)が存在しません。')         #sn（ノード）が無ければエラー
@@ -275,16 +278,33 @@ def set_calc_status(input):
 
 def set_ground(input):
     ground = input['ground']
-
     for gnd in ground:
-        print(gnd)
         n1, n2 = get_n1n2(gnd)
         input['sn'][n1 + '_s'] = {'t_flag': vt.SN_CALC}
-        input['tn'][n1 + ' -> ' + n1 + '_s'] = {'cdtc': ground[gnd]['area'] / ground[gnd]['rg']}
-        input['tn'][n1 + '_s -> ' + n2] = {'area':    ground[gnd]['area'],
-                                           'phi_0':   ground[gnd]['phi_0'],
-                                           'cof_r':   ground[gnd]['cof_r'],
-                                           'cof_phi': ground[gnd]['cof_phi']}
+        input['tn'][n1 + ' -> ' + n1 + '_s'] = {'cdtc':    ground[gnd]['area'] / ground[gnd]['rg']}
+        input['tn'][n1 + '_s -> ' + n2] =      {'area':    ground[gnd]['area'],
+                                                'phi_0':   ground[gnd]['phi_0'],
+                                                'cof_r':   ground[gnd]['cof_r'],
+                                                'cof_phi': ground[gnd]['cof_phi']}
+    return input
+
+def set_outer_wall(input):
+    o_wall = input['outer wall']
+    for ow in o_wall:
+        n1, n2 = get_n1n2(ow)
+        input['sn'][n1 + '_is'] = {'t_flag': vt.SN_CALC}
+        input['sn'][n1 + '_os'] = {'t_flag': vt.SN_CALC}
+
+        area    = o_wall[ow]['area']
+        alpha_i = o_wall[ow]['alpha_i'] if 'alpha_i' in o_wall[ow] else 9.0
+        alpha_o = o_wall[ow]['alpha_o'] if 'alpha_o' in o_wall[ow] else 25.0
+
+        input['tn'][n1 +   ' -> '  + n1 + '_is'] = {'cdtc': area * alpha_i}
+        input['tn'][n1 + '_is -> ' + n1 + '_os'] = {'cdtc': area * o_wall[ow]['U']}
+        input['tn'][n1 + '_os -> ' + n2        ] = {'cdtc': area * alpha_o}
+
+        input['tn'][n1 + '_os ->' + o_wall[ow]['solar']] = {'ms': area * o_wall[ow]['eta']}
+        
     return input
 
 def add_capa(input):    
@@ -376,9 +396,6 @@ def get_n1n2(nt):
     if s.find('->') == -1:  raise Exception('ERROR: vnもしくはtnのキーに -> が存在しません')
     if s.find(':')  == -1:  n1, n2 = s[:s.find('->')], s[s.find('->') + 2:]
     else:                   n1, n2 = s[:s.find('->')], s[s.find('->') + 2: s.find(':')]
-
-
-
     return n1, n2
 
 def set_vent_net(vn):
