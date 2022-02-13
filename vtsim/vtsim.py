@@ -193,6 +193,9 @@ def run_calc(input):                                                            
     if 'sn' in input:       set_sim_node(input['sn'])                                   #sn（ノード）の設定
     else:                   raise Exception('ERROR: ノード(sn)が存在しません。')         #sn（ノード）が無ければエラー
 
+    logger.info('Set VentNet Circulate')
+    if 'vn_c' in input:     input = set_vent_net_c(input)
+
     logger.info('Set VentNet.')
     if 'vn' in input:       set_vent_net(input['vn'])                                   #vn（換気回路網）の設定
 
@@ -402,6 +405,19 @@ def get_n1n2(nt):
     if s.find(':')  == -1:  n1, n2 = s[:s.find('->')], s[s.find('->') + 2:]
     else:                   n1, n2 = s[:s.find('->')], s[s.find('->') + 2: s.find(':')]
     return n1, n2
+
+def set_vent_net_c(input):
+    for vnc in input['vn_c']:
+        name = vnc.replace(' ', '').split('->')
+        for i in range(len(name) - 1):
+            nn = name[i] + ' -> ' + name[i + 1]
+            j = 0
+            while nn in input['vn']:
+                nn = nn + ': ' + str(j + 1)
+                j = j + 1
+            input['vn'][nn] = input['vn_c'][vnc]
+
+    return input
 
 def set_vent_net(vn):
     for i, nt in enumerate(vn):
