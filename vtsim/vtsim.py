@@ -170,8 +170,8 @@ def run_calc(input):                                                            
     logger.info('Set Ground.')
     if 'ground' in input:   input = set_ground(input)
 
-    logger.info('set Outer Wall')
-    if 'outer wall' in input:   input = set_outer_wall(input)
+    logger.info('set Wall')
+    if 'wall' in input:   input = set_wall(input)
 
     logger.info('Add Capacity.')   
     if 'sn' in input:       input = add_capa(input)                                     #熱容量を設定
@@ -288,7 +288,7 @@ def set_ground(input):
                                                 'cof_phi': ground[gnd]['cof_phi']}
     return input
 
-def set_outer_wall(input):
+def set_wall(input):
     o_wall = input['outer wall']
     for ow in o_wall:
         n1, n2 = get_n1n2(ow)
