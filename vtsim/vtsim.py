@@ -5,13 +5,15 @@ import numpy as np
 import pandas as pd
 import time
 import json
-import logging
 
 from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
 
 import vtsimc as vt
 
+###############################################################################
+# logger
+###############################################################################
 import logging
 from pytz import timezone
 from datetime import datetime
@@ -70,6 +72,15 @@ AC_HEATING: int = vt.AC_HEATING
 AC_COOLING: int = vt.AC_COOLING
 AC_STOP:    int = vt.AC_STOP
 
+calc = vt.VTSim()
+
+df_p   = pd.DataFrame()
+df_c   = pd.DataFrame()
+df_t   = pd.DataFrame()
+df_qv  = pd.DataFrame()
+df_qt1 = pd.DataFrame()
+df_qt2 = pd.DataFrame()
+
 ###############################################################################
 # define lambda etc.
 ###############################################################################
@@ -80,10 +91,9 @@ index    = lambda freq, length:   pd.DataFrame(index = pd.date_range(datetime(20
                                                datetime(2021, 1, 1, 0, 0, 0) + timedelta(seconds = length), 
                                                freq = freq)).index                                      #頻度freq、長さlengthのindex
 
-df   = lambda length:   pd.DataFrame(index = pd.date_range(datetime(2021, 1, 1, 0, 0, 0), 
-                                     datetime(2021, 1, 1, 0, 0, 0) + timedelta(seconds = length), 
-                                     freq='1s'))                                                        #長さlength、1s毎の時刻
-
+###############################################################################
+# define function
+###############################################################################
 def encode(object):                                                                                     #JSON形式に変換する際のエンコード
     if isinstance(object, pd.core.indexes.datetimes.DatetimeIndex): 
         return(object.strftime('%Y/%m/%d %H:%M:%S').to_list())
@@ -131,18 +141,6 @@ def to_json(input):                                                             
     input['version'] = '4.0.0'
     return(json.dumps(input, default = encode, ensure_ascii = False, indent = 4))                       
 
-calc = vt.VTSim()
-
-df_p   = pd.DataFrame()
-df_c   = pd.DataFrame()
-df_t   = pd.DataFrame()
-df_qv  = pd.DataFrame()
-df_qt1 = pd.DataFrame()
-df_qt2 = pd.DataFrame()
-
-###############################################################################
-# define function
-###############################################################################
 def to_list_f(v):
     if   type(v) == list:                   return(v)
     elif type(v) == np.ndarray:             return(v)
@@ -155,6 +153,9 @@ def to_list_i(v):
     elif type(v) == pd.core.series.Series:  return(np.array(v))
     else:                                   return[int(v)] * calc.sts.length
 
+###############################################################################
+# main
+###############################################################################
 def run_calc(input):                                                                    #はじめに呼び出される関数    
     if   type(input) == dict: input = to_json(input)                                    #辞書型であれば、JSON形式に変換
     elif type(input) != str: raise Exception('ERROR: inputは、辞書型かJSON形式である必要がります。')      #文字列（JSON形式)で無ければエラー
@@ -177,8 +178,8 @@ def run_calc(input):                                                            
     if 'glass' in input:    input = set_glass(input)
 
     logger.info('Add Capacity.')   
-    if 'sn' in input:       input = add_capa(input)                                     #熱容量を設定
-    else:                   raise Exception('ERROR: ノード(sn)が存在しません。')         #sn（ノード）が無ければエラー
+    if 'sn' in input:       input = add_capa(input)                                      #熱容量を設定
+    else:                   raise Exception('ERROR: ノード(sn)が存在しません。')           #sn（ノード）が無ければエラー
 
     logger.info('Set Aircon1.')
     if 'aircon' in input:   input = set_aircon1(input)                                   #エアコンをセット
@@ -194,7 +195,7 @@ def run_calc(input):                                                            
 
     logger.info('Set SimNode.')
     if 'sn' in input:       set_sim_node(input['sn'])                                   #sn（ノード）の設定
-    else:                   raise Exception('ERROR: ノード(sn)が存在しません。')         #sn（ノード）が無ければエラー
+    else:                   raise Exception('ERROR: ノード(sn)が存在しません。')          #sn（ノード）が無ければエラー
 
     logger.info('Set VentNet Circulate')
     if 'vn_c' in input:     input = set_vent_net_c(input)
@@ -227,13 +228,15 @@ def run_calc(input):                                                            
     e_time = time.time() - s_time    
     logger.info("Finish vtsim calc. calc time = {0}".format(e_time * 1000) + "[ms]")
 
-    opt = input['opt'] if 'opt' in input else OPT_GRAPH
-
     ix = pd.to_datetime(input['index'], format='%Y/%m/%d %H:%M:%S')
-    res = calc.result()
-    dat_list = []
-
     global df_p, df_c, df_t, df_qv, df_qt1, df_qt2
+    df_p, df_c, df_t, df_qv, df_qt1, df_qt2, dat_list = make_df(calc.result, ix)
+    
+    opt = input['opt'] if 'opt' in input else OPT_GRAPH
+    output_calc(dat_list, opt)
+
+def make_df(res, ix):
+    dat_list = []
 
     if len(res[0]) != 0:    
         df_p  = pd.DataFrame(np.array(res[0]).T,  index = ix, columns = input['sn'].keys())
@@ -259,7 +262,7 @@ def run_calc(input):                                                            
         df_qt2 = pd.DataFrame(np.array(res[5]).T,  index = ix, columns = input['tn'].keys())
         dat_list.append({'fn': 'thrm_qt2.csv', 'title': '熱量2', 'unit': '[W]', 'df': df_qt2})
 
-    output_calc(dat_list, opt)
+    return df_p, df_c, df_t, df_qv, df_qt1, df_qt2, dat_list
 
 def set_calc_status(input):
     sts  = vt.CalcStatus()
@@ -423,10 +426,15 @@ def set_sim_node(sn):
 
 def get_n1n2(nt):  
     s = nt.replace(' ', '')
+
+    if s.fine(':') == -1:   s, sfx = s, ''
+    else:                   s, sfx = s[:s.find(':')], '(' + s[s.find(':') + 1:] + ')'
+
     if s.find('->') == -1:  raise Exception('ERROR: vnもしくはtnのキーに -> が存在しません')
-    if s.find(':')  == -1:  n1, n2, sfx = s[:s.find('->')], s[s.find('->') + 2:], ''
-    else:                   n1, n2, sfx = s[:s.find('->')], s[s.find('->') + 2: s.find(':')], '(' + s[s.find(':') + 1:] + ')'
-    return n1, n2, sfx
+    if s.count('->') >= 2:  raise Exception('ERROR: キーに -> が2回以上出現します')
+
+    n = s.split('->')
+    return n[0], n[1], sfx
 
 def set_vent_net_c(input):
     for vnc in input['vn_c']:
