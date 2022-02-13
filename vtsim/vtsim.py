@@ -351,14 +351,14 @@ def set_solar(input):
     for s in input['solar']:
         sl = input['solar'][s]
         for n in name:
-            if n in s: input['sn'][n] = {'insolation': to_list_f(sl)}
+            if n in s: input['sn'][n] = {'insolation': sl}
 
     return input
 
 def set_heater(input):
     for h in input['heater']:
         ht = input['heater'][h]
-        input['sn'][ht] = {'h_input': to_list_f(ht)}
+        input['sn'][h] = {'h_input': ht}
 
     return input
 
