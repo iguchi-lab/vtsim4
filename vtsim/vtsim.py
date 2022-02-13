@@ -326,7 +326,7 @@ def set_aircon1(input):
         ac = input['aircon'][a]
         ac_in, ac_out = a + '_in', a + '_out'
 
-        if 'set' in ac:     n3 = ac['set']
+        if 'set' in ac:             n3 = ac['set']
         else:                       raise Exception('ERROR: エアコンのsetが設定されていません')
         n1 = ac['in']  if 'in'  in ac else ac['set']
         n2 = ac['out'] if 'out' in ac else ac['set']
@@ -351,7 +351,7 @@ def set_solar(input):
     for s in input['solar']:
         sl = input['solar'][s]
         for n in name:
-            if n in sl: input['sn'][n] = {'insolation': to_list_f(sl)}
+            if n in s: input['sn'][n] = {'insolation': to_list_f(sl)}
 
     return input
 
