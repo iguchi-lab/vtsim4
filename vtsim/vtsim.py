@@ -413,7 +413,7 @@ def set_vent_net_c(input):
             nn = name[i] + ' -> ' + name[i + 1]
             j = 0
             while nn in input['vn']:
-                nn = nn + ': ' + str(j + 1)
+                nn = name[i] + ' -> ' + name[i + 1] + ': ' + str(j + 1)
                 j = j + 1
             input['vn'][nn] = input['vn_c'][vnc]
 
