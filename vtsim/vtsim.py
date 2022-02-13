@@ -296,15 +296,16 @@ def set_outer_wall(input):
         input['sn'][n1 + '_os'] = {'t_flag': vt.SN_CALC}
 
         area    = o_wall[ow]['area']
-        alpha_i = o_wall[ow]['alpha_i'] if 'alpha_i' in o_wall[ow] else 9.0
-        alpha_o = o_wall[ow]['alpha_o'] if 'alpha_o' in o_wall[ow] else 25.0
+        alpha_1 = o_wall[ow]['alpha_1'] if 'alpha_1' in o_wall[ow] else 9.0
+        alpha_2 = o_wall[ow]['alpha_2'] if 'alpha_2' in o_wall[ow] else 25.0
 
-        input['tn'][n1 +   ' -> '  + n1 + '_is'] = {'cdtc': area * alpha_i}
+        input['tn'][n1 +   ' -> '  + n1 + '_is'] = {'cdtc': area * alpha_1}
         input['tn'][n1 + '_is -> ' + n1 + '_os'] = {'cdtc': area * o_wall[ow]['U']}
-        input['tn'][n1 + '_os -> ' + n2        ] = {'cdtc': area * alpha_o}
+        input['tn'][n1 + '_os -> ' + n2        ] = {'cdtc': area * alpha_2}
 
-        input['tn'][n1 + '_os ->' + o_wall[ow]['solar']] = {'ms': area * o_wall[ow]['eta']}
-        
+        if 'solar' in o_wall[ow]:
+            input['tn'][n1 + '_os ->' + o_wall[ow]['solar']] = {'ms': area * o_wall[ow]['eta']}
+
     return input
 
 def add_capa(input):    
