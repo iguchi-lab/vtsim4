@@ -167,6 +167,9 @@ def run_calc(input):                                                            
     if 'index' in input:    set_calc_status(input)                                      #計算条件を設定
     else:                   raise Exception('ERROR: index が存在しません。')             #indexが無ければエラー
 
+    logger.info('Set Ground.')
+    if 'ground' in input:   input = set_ground(input)
+
     logger.info('Add Capacity.')   
     if 'sn' in input:       input = add_capa(input)                                     #熱容量を設定
     else:                   raise Exception('ERROR: ノード(sn)が存在しません。')         #sn（ノード）が無ければエラー
@@ -270,18 +273,29 @@ def set_calc_status(input):
 
     calc.setup(sts)
 
+def set_ground(input):
+    ground = input['ground']
+
+    for gnd in ground:
+        print(gnd)
+        n1, n2 = get_n1n2(gnd)
+        input['sn'][n1 + '_s'] = {'t_flag': vt.SN_CALC}
+        input['tn'][n1 + ' -> ' + n1 + '_s'] = {'cdtc': ground[gnd]['area'] / ground[gnd]['rg']}
+        input['tn'][n1 + '_s -> ' + n2] = {'area':    ground[gnd]['area'],
+                                           'phi_0':   ground[gnd]['phi_0'],
+                                           'cof_r':   ground[gnd]['cof_r'],
+                                           'cof_phi': ground[gnd]['cof_phi']}
+    return input
+
 def add_capa(input):    
     for n in [n for n in input['sn'] if 'capa' in input['sn'][n]]:                              #熱容量の設定のあるノード
         nc = n + '_c'
         
-        input['sn'][nc] = {}
-        input['sn'][nc]['t_flag'] = vt.SN_DLY                                            #計算フラグ
-        input['sn'][nc]['s_i']    = n                                                    #親ノードの設定
-        if 't' in input['sn'][n]:   input['sn'][nc]['t'] = input['sn'][n]['t']           #初期温度の継承
+        input['sn'][nc] = {'t_flag': vt.SN_DLY, 
+                           's_i':    n}                                                         #計算フラグ、親ノードの設定
+        if 't' in input['sn'][n]:   input['sn'][nc]['t'] = input['sn'][n]['t']                  #初期温度の継承
 
-        input['tn'][n + ' -> ' + nc] = {}
-        input['tn'][n + ' -> ' + nc]['type'] = vt.TN_SIMPLE                              #熱容量の設定
-        input['tn'][n + ' -> ' + nc]['cdtc'] = input['sn'][n]['capa'] / calc.sts.t_step  #コンダクタンス（熱容量）     
+        input['tn'][n + ' -> ' + nc] = {'cdtc': input['sn'][n]['capa'] / calc.sts.t_step}       #熱容量の設定 
 
     return input
 
@@ -363,8 +377,7 @@ def get_n1n2(nt):
     if s.find(':')  == -1:  n1, n2 = s[:s.find('->')], s[s.find('->') + 2:]
     else:                   n1, n2 = s[:s.find('->')], s[s.find('->') + 2: s.find(':')]
 
-    if n1 not in calc.node: raise Exception('ERROR: ノード(sn)の中に ' + n1 + ' がありません。')
-    if n2 not in calc.node: raise Exception('ERROR: ノード(sn)の中に ' + n2 + ' がありません。')
+
 
     return n1, n2
 
@@ -383,6 +396,9 @@ def set_vent_net(vn):
         h1 = to_list_f(vn[nt]['h1']) if 'h1' in vn[nt] else to_list_f(0.0)                          #高さ1、行列設定不可
         h2 = to_list_f(vn[nt]['h2']) if 'h2' in vn[nt] else to_list_f(0.0)                          #高さ2、行列設定不可
         n1, n2 = get_n1n2(nt)
+        if n1 not in calc.node: raise Exception('ERROR: ノード(sn)の中に ' + n1 + ' がありません。')
+        if n2 not in calc.node: raise Exception('ERROR: ノード(sn)の中に ' + n2 + ' がありません。')
+
         calc.vn_add(i, calc.node[n1], calc.node[n2], vn_type, h1, h2)
         
         if vn_type == vt.VN_FIX:       
@@ -415,6 +431,9 @@ def set_thrm_net(tn):
             tn_type = tn[nt]['type']
 
         n1, n2 = get_n1n2(nt)
+        if n1 not in calc.node: raise Exception('ERROR: ノード(sn)の中に ' + n1 + ' がありません。')
+        if n2 not in calc.node: raise Exception('ERROR: ノード(sn)の中に ' + n2 + ' がありません。')
+
         calc.tn_add(i, calc.node[n1], calc.node[n2], tn_type)
 
         if tn_type == vt.TN_SIMPLE:     
