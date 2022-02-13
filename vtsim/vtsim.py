@@ -324,7 +324,7 @@ def add_capa(input):
 def set_aircon1(input):
     for a in input['aircon']:
         ac = input['aircon'][a]
-        ac_in, ac_out = ac + '_in', ac + '_out'
+        ac_in, ac_out = a + '_in', a + '_out'
 
         if 'set' in ac:     n3 = ac['set']
         else:                       raise Exception('ERROR: エアコンのsetが設定されていません')
@@ -347,7 +347,6 @@ def set_aircon1(input):
 def set_solar(input):
     name = ['Ins_T_H', 'Ins_W_E', 'Ins_W_S', 'Ins_W_W', 'Ins_W_N', 'Ins_W_H',
                        'Ins_G_E', 'Ins_G_S', 'Ins_G_W', 'Ins_G_N', 'Ins_G_H'] 
-    solar = input['solar']
     
     for s in input['solar']:
         sl = input['solar'][s]
@@ -366,7 +365,7 @@ def set_heater(input):
 def set_aircon2(input):
     for a in input['aircon']:
         ac = input['aircon'][a]
-        ac_in, ac_out, n3 = ac + '_in', ac + '_out', ac['set']
+        ac_in, ac_out, n3 = a + '_in', a + '_out', ac['set']
 
         for i, nt in enumerate(calc.vn):
             if nt.vn_type == vt.VN_AIRCON:
