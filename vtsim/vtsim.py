@@ -297,8 +297,12 @@ def set_wall(input):
         alpha_1 = wl['alpha_1'] if 'alpha_1' in wl else 9.0
         alpha_2 = wl['alpha_2'] if 'alpha_2' in wl else 25.0
 
-        input['sn'][n1 + '_is'] = {'t_flag': vt.SN_CALC, 'capa': area * wl['capa_w'] / 2}
-        input['sn'][n1 + '_os'] = {'t_flag': vt.SN_CALC, 'capa': area * wl['capa_w'] / 2}
+        input['sn'][n1 + '_is'] = {'t_flag': vt.SN_CALC}
+        input['sn'][n1 + '_os'] = {'t_flag': vt.SN_CALC}
+
+        if 'capa_w' in wl:
+            input['sn'][n1 + '_is'] = {'capa': area * wl['capa_w'] / 2}
+            input['sn'][n1 + '_os'] = {'capa': area * wl['capa_w'] / 2}
 
         input['tn'][n1 +   ' -> '  + n1 + '_is'] = {'cdtc': area * alpha_1}
         input['tn'][n1 + '_is -> ' + n1 + '_os'] = {'cdtc': area * wl['U_w']}
