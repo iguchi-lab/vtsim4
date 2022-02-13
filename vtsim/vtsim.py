@@ -425,7 +425,7 @@ def get_n1n2(nt):
     s = nt.replace(' ', '')
     if s.find('->') == -1:  raise Exception('ERROR: vnもしくはtnのキーに -> が存在しません')
     if s.find(':')  == -1:  n1, n2, sfx = s[:s.find('->')], s[s.find('->') + 2:], ''
-    else:                   n1, n2, sfx = s[:s.find('->')], s[s.find('->') + 2: s.find(':')], ' (' + s[s.find(':') + 1:] + ')'
+    else:                   n1, n2, sfx = s[:s.find('->')], s[s.find('->') + 2: s.find(':')], '(' + s[s.find(':') + 1:] + ')'
     return n1, n2, sfx
 
 def set_vent_net_c(input):
