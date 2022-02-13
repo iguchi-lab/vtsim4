@@ -277,34 +277,35 @@ def set_calc_status(input):
     calc.setup(sts)
 
 def set_ground(input):
-    ground = input['ground']
-    for gnd in ground:
-        n1, n2 = get_n1n2(gnd)
+    for g in input['ground']:
+        gnd = input['ground'][g]
+        n1, n2 = get_n1n2(g)
         input['sn'][n1 + '_s'] = {'t_flag': vt.SN_CALC}
-        input['tn'][n1 + ' -> ' + n1 + '_s'] = {'cdtc':    ground[gnd]['area'] / ground[gnd]['rg']}
-        input['tn'][n1 + '_s -> ' + n2] =      {'area':    ground[gnd]['area'],
-                                                'phi_0':   ground[gnd]['phi_0'],
-                                                'cof_r':   ground[gnd]['cof_r'],
-                                                'cof_phi': ground[gnd]['cof_phi']}
+        input['tn'][n1 + ' -> ' + n1 + '_s'] = {'cdtc':    gnd['area'] / gnd['rg']}
+        input['tn'][n1 + '_s -> ' + n2] =      {'area':    gnd['area'],
+                                                'phi_0':   gnd['phi_0'],
+                                                'cof_r':   gnd['cof_r'],
+                                                'cof_phi': gnd['cof_phi']}
     return input
 
 def set_wall(input):
-    o_wall = input['outer wall']
-    for ow in o_wall:
-        n1, n2 = get_n1n2(ow)
-        input['sn'][n1 + '_is'] = {'t_flag': vt.SN_CALC}
-        input['sn'][n1 + '_os'] = {'t_flag': vt.SN_CALC}
+    for w in input['wall']:
+        wl = input['wall'][w]
 
-        area    = o_wall[ow]['area']
-        alpha_1 = o_wall[ow]['alpha_1'] if 'alpha_1' in o_wall[ow] else 9.0
-        alpha_2 = o_wall[ow]['alpha_2'] if 'alpha_2' in o_wall[ow] else 25.0
+        n1, n2 = get_n1n2(w)
+        area    = wl['area']
+        alpha_1 = wl['alpha_1'] if 'alpha_1' in wl else 9.0
+        alpha_2 = wl['alpha_2'] if 'alpha_2' in wl else 25.0
+
+        input['sn'][n1 + '_is'] = {'t_flag': vt.SN_CALC, 'capa': area * wl['capa_w'] / 2}
+        input['sn'][n1 + '_os'] = {'t_flag': vt.SN_CALC, 'capa': area * wl['capa_w'] / 2}
 
         input['tn'][n1 +   ' -> '  + n1 + '_is'] = {'cdtc': area * alpha_1}
-        input['tn'][n1 + '_is -> ' + n1 + '_os'] = {'cdtc': area * o_wall[ow]['U']}
+        input['tn'][n1 + '_is -> ' + n1 + '_os'] = {'cdtc': area * wl['U_w']}
         input['tn'][n1 + '_os -> ' + n2        ] = {'cdtc': area * alpha_2}
 
-        if 'solar' in o_wall[ow]:
-            input['tn'][n1 + '_os ->' + o_wall[ow]['solar']] = {'ms': area * o_wall[ow]['eta']}
+        if 'solar' in wl:
+            input['tn'][n1 + '_os ->' + wl['solar']] = {'ms': area * wl['eta_w']}
 
     return input
 
@@ -321,25 +322,25 @@ def add_capa(input):
     return input
 
 def set_aircon1(input):
-    aircon = input['aircon']
-    for ac in aircon:
+    for a in input['aircon']:
+        ac = input['aircon'][a]
         ac_in, ac_out = ac + '_in', ac + '_out'
 
-        if 'set' in aircon[ac]:     n3 = aircon[ac]['set']
+        if 'set' in ac:     n3 = ac['set']
         else:                       raise Exception('ERROR: エアコンのsetが設定されていません')
-        n1 = aircon[ac]['in']  if 'in'  in aircon[ac] else aircon[ac]['set']
-        n2 = aircon[ac]['out'] if 'out' in aircon[ac] else aircon[ac]['set']
+        n1 = ac['in']  if 'in'  in ac else ac['set']
+        n2 = ac['out'] if 'out' in ac else ac['set']
     
         input['sn'][ac_in]            = {'t_flag': vt.SN_CALC}
         input['sn'][ac_out]           = {'t_flag': vt.SN_CALC}
 
-        vol = aircon[ac]['vol'] if 'vol' in aircon[ac] else 1000 / 3600
+        vol = ac['vol'] if 'vol' in ac else 1000 / 3600
 
         input['vn'][n1     + ' -> ' + ac_in]  = {'vol': vol}
         input['vn'][ac_in  + ' -> ' + ac_out] = {'ac_vol': vol}
         input['vn'][ac_out + ' -> ' + n2]     = {'vol': vol}
 
-        input['tn'][n3  + ' -> ' + ac_out] = {'ac_mode': aircon[ac]['ac_mode'], 'pre_tmp': aircon[ac]['pre_tmp']}
+        input['tn'][n3  + ' -> ' + ac_out] = {'ac_mode': ac['ac_mode'], 'pre_tmp': ac['pre_tmp']}
     
     return input
 
@@ -348,24 +349,24 @@ def set_solar(input):
                        'Ins_G_E', 'Ins_G_S', 'Ins_G_W', 'Ins_G_N', 'Ins_G_H'] 
     solar = input['solar']
     
-    for sl in solar:
+    for s in input['solar']:
+        sl = input['solar'][s]
         for n in name:
-            if n in sl: input['sn'][n] = {'insolation': to_list_f(solar[sl])}
+            if n in sl: input['sn'][n] = {'insolation': to_list_f(sl)}
 
     return input
 
 def set_heater(input):
-    heater = input['heater']
-
-    for ht in heater:
-        input['sn'][ht] = {'h_input': to_list_f(heater[ht])}
+    for h in input['heater']:
+        ht = input['heater'][h]
+        input['sn'][ht] = {'h_input': to_list_f(ht)}
 
     return input
 
 def set_aircon2(input):
-    aircon = input['aircon']
-    for ac in aircon:
-        ac_in, ac_out, n3 = ac + '_in', ac + '_out', aircon[ac]['set']
+    for a in input['aircon']:
+        ac = input['aircon'][a]
+        ac_in, ac_out, n3 = ac + '_in', ac + '_out', ac['set']
 
         for i, nt in enumerate(calc.vn):
             if nt.vn_type == vt.VN_AIRCON:
