@@ -241,26 +241,38 @@ def make_df(input, res, ix):
     if len(res[0]) != 0:    
         df_p  = pd.DataFrame(np.array(res[0]).T,  index = ix, columns = input['sn'].keys())
         dat_list.append({'fn': 'vent_p.csv',   'title': '圧力',  'unit': '[Pa]', 'df': df_p})
+    else:
+        df_p = None
 
     if len(res[1]) != 0:    
         df_c  = pd.DataFrame(np.array(res[1]).T,  index = ix, columns = input['sn'].keys())
         dat_list.append({'fn': 'vent_c.csv',   'title': '濃度',  'unit': '[個/L]', 'df': df_c})
+    else:
+        df_c = None
 
     if len(res[2]) != 0:    
         df_t  = pd.DataFrame(np.array(res[2]).T,  index = ix, columns = input['sn'].keys())
         dat_list.append({'fn': 'them_t.csv',   'title': '温度',  'unit': '[℃]', 'df': df_t})
+    else:
+        df_t = None
 
     if len(res[3]) != 0:    
         df_qv  = pd.DataFrame(np.array(res[3]).T,  index = ix, columns = input['vn'].keys())
         dat_list.append({'fn': 'vent_qv.csv',  'title': '風量',  'unit': '[m3/s]', 'df': df_qv})
+    else:
+        df_qv = None
 
     if len(res[4]) != 0:    
         df_qt1 = pd.DataFrame(np.array(res[4]).T,  index = ix, columns = input['vn'].keys())
         dat_list.append({'fn': 'thrm_qt1.csv', 'title': '熱量1', 'unit': '[W]', 'df': df_qt1})
+    else:
+        df_qt1 = None
 
     if len(res[5]) != 0:    
         df_qt2 = pd.DataFrame(np.array(res[5]).T,  index = ix, columns = input['tn'].keys())
         dat_list.append({'fn': 'thrm_qt2.csv', 'title': '熱量2', 'unit': '[W]', 'df': df_qt2})
+    else:
+        df_qt2 = None
 
     return df_p, df_c, df_t, df_qv, df_qt1, df_qt2, dat_list
 
