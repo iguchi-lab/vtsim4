@@ -418,9 +418,9 @@ public:
                 }
                 for(unsigned int i = 0; i < vn.size(); i++){
                     if(vn[i].qv[ts] > 0 && get<1>(sn[vn[i].i2].flag) == SN_CALC)    
-                        sn[vn[i].i2].c[ts] += vn[i].qv[ts] * (sn[vn[i].i1].c[ts] * (1 - vn[i].eta[ts]) - sn[vn[i].i2].c[ts]) * sts.t_step / sn[vn[i].i2].v[ts];
+                        sn[vn[i].i2].c[ts] += vn[i].qv[ts] * (sn[vn[i].i1].c[ts - 1] * (1 - vn[i].eta[ts]) - sn[vn[i].i2].c[ts - 1]) * sts.t_step / sn[vn[i].i2].v[ts];
                     if(vn[i].qv[ts] < 0 && get<1>(sn[vn[i].i1].flag) == SN_CALC)    
-                        sn[vn[i].i1].c[ts] += vn[i].qv[ts] * (sn[vn[i].i2].c[ts] * (1 - vn[i].eta[ts]) - sn[vn[i].i1].c[ts]) * sts.t_step / sn[vn[i].i1].v[ts];
+                        sn[vn[i].i1].c[ts] += vn[i].qv[ts] * (sn[vn[i].i2].c[ts - 1] * (1 - vn[i].eta[ts]) - sn[vn[i].i1].c[ts - 1]) * sts.t_step / sn[vn[i].i1].v[ts];
                 }
                 for(unsigned int i = 0; i < sn.size(); i++)    LOG_CONTENTS("c" << sn[i].i << ": " << sn[i].c[ts] << "num/L, ");
                 LOG_CONTENTS(endl);
