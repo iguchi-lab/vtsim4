@@ -408,8 +408,8 @@ public:
 
             if(c_idc.size() > 0){
                 for(unsigned int i = 0; i < c_idc.size(); i++){
-                    sn[c_idc[i]].c[ts] =  sn[c_idc[i]].c[ts - 1] * exp(-sn[c_idc[i]].beta[ts] * sts.t_step);
                     sn[c_idc[i]].c[ts] += sn[c_idc[i]].m[ts] / (sn[c_idc[i]].beta[ts] * sn[c_idc[i]].v[ts]) * (1 - exp(-sn[c_idc[i]].beta[ts] * sts.t_step));
+                    sn[c_idc[i]].c[ts] =  sn[c_idc[i]].c[ts] * exp(-sn[c_idc[i]].beta[ts] * sts.t_step);
                 }
                 for(unsigned int i = 0; i < vn.size(); i++){
                     if(vn[i].qv[ts] > 0 && get<1>(sn[vn[i].i2].flag) == SN_CALC)    
