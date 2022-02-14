@@ -230,7 +230,7 @@ def run_calc(input):                                                            
 
     ix = pd.to_datetime(input['index'], format='%Y/%m/%d %H:%M:%S')
     global df_p, df_c, df_t, df_qv, df_qt1, df_qt2
-    df_p, df_c, df_t, df_qv, df_qt1, df_qt2, dat_list = make_df(calc.result, ix)
+    df_p, df_c, df_t, df_qv, df_qt1, df_qt2, dat_list = make_df(calc.result(), ix)
     
     opt = input['opt'] if 'opt' in input else OPT_GRAPH
     output_calc(dat_list, opt)
