@@ -427,7 +427,7 @@ def set_sim_node(sn):
 def get_n1n2(nt):  
     s = nt.replace(' ', '')
 
-    if s.fine(':') == -1:   s, sfx = s, ''
+    if s.find(':') == -1:   s, sfx = s, ''
     else:                   s, sfx = s[:s.find(':')], '(' + s[s.find(':') + 1:] + ')'
 
     if s.find('->') == -1:  raise Exception('ERROR: vnもしくはtnのキーに -> が存在しません')
