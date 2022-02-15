@@ -48,6 +48,8 @@ public:
         sts = sts_;
         sn.clear();
         node.clear();
+        v_net.clear();
+        t_net.clear();
         vn.clear();
         tn.clear();
         v_idc.clear();
