@@ -38,7 +38,7 @@ class VTSim{
 public:
     CalcStatus sts;
     vector<Node> sn;                                        //ノード
-    map<string, int> node;
+    map<string, int> node, v_net, t_net;
     vector<Vent_Net> vn;                                    //換気回路網
     vector<Thrm_Net> tn;                                    //熱回路網
     vector<int> v_idc, c_idc, t_idc;
@@ -68,11 +68,13 @@ public:
         node[name] = i;
     }
 
-    void vn_add(int i, int i1, int i2, int vn_type, vector<double> h1, vector<double> h2){
+    void vn_add(int i, string name, int i1, int i2, int vn_type, vector<double> h1, vector<double> h2){
+        v_net[name] = i;
         vn.push_back(Vent_Net(sts.length, i, i1, i2, vn_type, h1, h2));
     }
 
-    void tn_add(int i, int i1, int i2, int tn_type){
+    void tn_add(int i, string name, int i1, int i2, int tn_type){
+        t_net[name] = i;
         tn.push_back(Thrm_Net(sts.length, i, i1, i2, tn_type));
     }
 
