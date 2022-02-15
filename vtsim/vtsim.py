@@ -388,7 +388,7 @@ def set_sim_node(sn):
     i = 0
     for n in sn:
         for nn in get_node(n):
-            logger.info('ノードを設定しています。' + nn)
+            logger.info('    setting node :' + nn)
             calc.set_node(nn, i)
             v_flag = sn[n]['v_flag'] if 'v_flag' in sn[n] else vt.SN_NONE
             c_flag = sn[n]['c_flag'] if 'c_flag' in sn[n] else vt.SN_NONE
@@ -435,7 +435,7 @@ def set_vent_net(vn):
     i = 0
     for nt in vn:
         for n1n2 in get_network(nt):
-            logger.info('換気ネットワークを設定しています。' + n1n2)
+            logger.info('    setting ventnet :' + n1n2)
             if 'type' not in vn[nt]:
                 if   ('alpha'  in vn[nt]) and ('area' in vn[nt]):  vn_type = vt.VN_SIMPLE
                 elif ('a'      in vn[nt]) and ('n'    in vn[nt]):  vn_type = vt.VN_GAP
@@ -484,7 +484,7 @@ def set_thrm_net(tn):
     i = 0
     for nt in tn:
         for n1n2 in get_network(nt):
-            logger.info('Setting Thrmnet :' + n1n2)
+            logger.info('    setting thrmnet :' + n1n2)
             if 'type' not in tn[nt]:
                 if    'ms'       in tn[nt]:                            tn_type = vt.TN_SOLAR
                 elif ('phi_0'    in tn[nt]) and ('cof_r'   in tn[nt]): tn_type = vt.TN_GROUND
