@@ -273,7 +273,7 @@ def set_wall(input):
         input['tn'][n1 + '_W_os' + sfx + ' -> ' + n2                ] = {'cdtc': area * alpha_2}
 
         if 'solar' in wl:
-            input['tn'][n1 + '_os' + sfx + ' -> ' + wl['solar']] = {'ms': area * wl['eta_w']}
+            input['tn'][n1 + '_W_os' + sfx + ' -> ' + wl['solar']] = {'ms': area * wl['eta_w']}
 
     return input
 
