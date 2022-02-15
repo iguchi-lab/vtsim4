@@ -387,7 +387,7 @@ def set_sim_node(sn):
     i = 0
     for n in sn:
         for nn in get_node(n):
-            logger.info('    setting node ' + str(i) + ':' + nn)
+            logger.info('    setting node ' + str(i) + ' : ' + nn)
             calc.set_node(nn, i)
             v_flag = sn[n]['v_flag'] if 'v_flag' in sn[n] else vt.SN_NONE
             c_flag = sn[n]['c_flag'] if 'c_flag' in sn[n] else vt.SN_NONE
@@ -402,9 +402,7 @@ def set_sim_node(sn):
             if 'v'           in sn[n]:    calc.sn[i].v     = to_list_f(sn[n]['v'])                    #気積、行列で設定可能
             if 'm'           in sn[n]:    calc.sn[i].m     = to_list_f(sn[n]['m'])                    #発生量、行列で設定可能
             if 'beta'        in sn[n]:    calc.sn[i].beta  = to_list_f(sn[n]['beta'])                 #濃度減少率、行列で設定可能
-            if 's_i'         in sn[n]:    
-                calc.sn[i].s_i   = calc.node[sn[n]['s_i']]
-                logger.info(sn[n]['s_i'])
+            if 's_i'         in sn[n]:    calc.sn[i].s_i   = calc.node[sn[n]['s_i']]
 
             i = i + 1
 
@@ -436,7 +434,7 @@ def set_vent_net(vn):
     i = 0
     for nt in vn:
         for n1n2 in get_network(nt):
-            logger.info('    setting ventnet ' + str(i) + ':' + n1n2)
+            logger.info('    setting ventnet ' + str(i) + ' : ' + n1n2)
             if 'type' not in vn[nt]:
                 if   ('alpha'  in vn[nt]) and ('area' in vn[nt]):  vn_type = vt.VN_SIMPLE
                 elif ('a'      in vn[nt]) and ('n'    in vn[nt]):  vn_type = vt.VN_GAP
@@ -485,7 +483,7 @@ def set_thrm_net(tn):
     i = 0
     for nt in tn:
         for n1n2 in get_network(nt):
-            logger.info('    setting thrmnet ' + str(i) + ':' + n1n2)
+            logger.info('    setting thrmnet ' + str(i) + ' : ' + n1n2)
             if 'type' not in tn[nt]:
                 if    'ms'       in tn[nt]:                            tn_type = vt.TN_SOLAR
                 elif ('phi_0'    in tn[nt]) and ('cof_r'   in tn[nt]): tn_type = vt.TN_GROUND
@@ -522,42 +520,48 @@ def set_thrm_net(tn):
                 calc.tn[i].cof_phi = tn[nt]['cof_phi']                                     #地盤熱応答、行列設定不可（面積と断熱性能はOK）         
             i = i + 1
 
+def get_keys(dict):
+    keys = []
+    for i in range(len(dict)):
+        keys.append([k for k, v in dict.items() if v == i][0])
+    return keys
+
 def make_df(res, ix):
     global df_p, df_c, df_t, df_qv, df_qt1, df_qt2
     dat_list = []
 
     if len(res[0]) != 0:    
-        df_p  = pd.DataFrame(np.array(res[0]).T,  index = ix, columns = calc.node.keys())
+        df_p  = pd.DataFrame(np.array(res[0]).T,  index = ix, columns = get_keys(calc.node.keys()))
         dat_list.append({'fn': 'vent_p.csv',   'title': '圧力',  'unit': '[Pa]', 'df': df_p})
     else:
         df_p = None
 
     if len(res[1]) != 0:    
-        df_c  = pd.DataFrame(np.array(res[1]).T,  index = ix, columns = calc.node.keys())
+        df_c  = pd.DataFrame(np.array(res[1]).T,  index = ix, columns = get_keys(calc.node.keys()))
         dat_list.append({'fn': 'vent_c.csv',   'title': '濃度',  'unit': '[個/L]', 'df': df_c})
     else:
         df_c = None
 
     if len(res[2]) != 0:    
-        df_t  = pd.DataFrame(np.array(res[2]).T,  index = ix, columns = calc.node.keys())
+        df_t  = pd.DataFrame(np.array(res[2]).T,  index = ix, columns = get_keys(calc.node.keys()))
         dat_list.append({'fn': 'them_t.csv',   'title': '温度',  'unit': '[℃]', 'df': df_t})
     else:
         df_t = None
 
     if len(res[3]) != 0:    
-        df_qv  = pd.DataFrame(np.array(res[3]).T,  index = ix, columns = calc.v_net.keys())
+        df_qv  = pd.DataFrame(np.array(res[3]).T,  index = ix, columns = get_keys(calc.v_net.keys()))
         dat_list.append({'fn': 'vent_qv.csv',  'title': '風量',  'unit': '[m3/s]', 'df': df_qv})
     else:
         df_qv = None
 
     if len(res[4]) != 0:    
-        df_qt1 = pd.DataFrame(np.array(res[4]).T,  index = ix, columns = calc.v_net.keys())
+        df_qt1 = pd.DataFrame(np.array(res[4]).T,  index = ix, columns = get_keys(calc.v_net.keys()))
         dat_list.append({'fn': 'thrm_qt1.csv', 'title': '熱量1', 'unit': '[W]', 'df': df_qt1})
     else:
         df_qt1 = None
 
     if len(res[5]) != 0:    
-        df_qt2 = pd.DataFrame(np.array(res[5]).T,  index = ix, columns = calc.t_net.keys())
+        df_qt2 = pd.DataFrame(np.array(res[5]).T,  index = ix, columns = get_keys(calc.t_net.keys()))
         dat_list.append({'fn': 'thrm_qt2.csv', 'title': '熱量2', 'unit': '[W]', 'df': df_qt2})
     else:
         df_qt2 = None
