@@ -516,7 +516,7 @@ def set_vent_net(vn):
 
             nn = n1n2
             j = 1
-            while nn in calc.v_net.keys():
+            while n1n2 in calc.v_net.keys():
                 n1n2 = nn + ' : ' + str(j)
                 j = j + 1
 
@@ -561,7 +561,7 @@ def set_thrm_net(tn):
 
             nn = n1n2
             j = 1
-            while nn in calc.t_net.keys():
+            while n1n2 in calc.t_net.keys():
                 n1n2 = nn + ' : ' + str(j)
                 j = j + 1
 
