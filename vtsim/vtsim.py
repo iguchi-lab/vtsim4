@@ -229,13 +229,14 @@ def run_calc(input):                                                            
     logger.info("Finish vtsim calc. calc time = {0}".format(e_time * 1000) + "[ms]")
 
     ix = pd.to_datetime(input['index'], format='%Y/%m/%d %H:%M:%S')
-    global df_p, df_c, df_t, df_qv, df_qt1, df_qt2
-    df_p, df_c, df_t, df_qv, df_qt1, df_qt2, dat_list = make_df(calc.result(), ix)
+    
+    dat_list = make_df(calc.result(), ix)
     
     opt = input['opt'] if 'opt' in input else OPT_GRAPH
     output_calc(dat_list, opt)
 
 def make_df(res, ix):
+    global df_p, df_c, df_t, df_qv, df_qt1, df_qt2
     dat_list = []
 
     if len(res[0]) != 0:    
@@ -274,7 +275,7 @@ def make_df(res, ix):
     else:
         df_qt2 = None
 
-    return df_p, df_c, df_t, df_qv, df_qt1, df_qt2, dat_list
+    return dat_list
 
 def set_calc_status(input):
     sts  = vt.CalcStatus()
@@ -497,7 +498,6 @@ def set_vent_net(vn):
     i = 0
     for nt in vn:
         for n1n2 in get_network(nt):
-            print(n1n2)
             if 'type' not in vn[nt]:
                 if   ('alpha'  in vn[nt]) and ('area' in vn[nt]):  vn_type = vt.VN_SIMPLE
                 elif ('a'      in vn[nt]) and ('n'    in vn[nt]):  vn_type = vt.VN_GAP
@@ -513,6 +513,12 @@ def set_vent_net(vn):
             n1, n2, _ = get_n1n2(n1n2)
             if n1 not in calc.node: raise Exception('ERROR: ノード(sn)の中に ' + n1 + ' がありません。')
             if n2 not in calc.node: raise Exception('ERROR: ノード(sn)の中に ' + n2 + ' がありません。')
+
+            nn = n1n2
+            j = 1
+            while nn in calc.v_net.keys():
+                n1n2 = nn + ' : ' + str(j)
+                j = j + 1
 
             calc.vn_add(i, n1n2, calc.node[n1], calc.node[n2], vn_type, h1, h2)
             
@@ -552,6 +558,12 @@ def set_thrm_net(tn):
             n1, n2, _ = get_n1n2(n1n2)
             if n1 not in calc.node: raise Exception('ERROR: ノード(sn)の中に ' + n1 + ' がありません。')
             if n2 not in calc.node: raise Exception('ERROR: ノード(sn)の中に ' + n2 + ' がありません。')
+
+            nn = n1n2
+            j = 1
+            while nn in calc.t_net.keys():
+                n1n2 = nn + ' : ' + str(j)
+                j = j + 1
 
             calc.tn_add(i, n1n2, calc.node[n1], calc.node[n2], tn_type)
 
