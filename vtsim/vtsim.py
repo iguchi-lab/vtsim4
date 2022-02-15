@@ -214,8 +214,8 @@ def run_calc(input):                                                            
                                   calc.sts.conv_err, calc.sts.sor_ratio, calc.sts.sor_err]))
     logger.info('sn      ' + str([n.i for n in calc.sn]))
     logger.info('node    ' + str(calc.node))
-    logger.info('vn      ' + str(calc.v_net))
-    logger.info('tn      ' + str(calc.t_net))
+    logger.info('v_net   ' + str(calc.v_net))
+    logger.info('t_net   ' + str(calc.t_net))
     logger.info('v_idc   ' + str(calc.v_idc))
     logger.info('c_idc   ' + str(calc.c_idc))
     logger.info('t_idc   ' + str(calc.t_idc))
@@ -230,12 +230,12 @@ def run_calc(input):                                                            
 
     ix = pd.to_datetime(input['index'], format='%Y/%m/%d %H:%M:%S')
     global df_p, df_c, df_t, df_qv, df_qt1, df_qt2
-    df_p, df_c, df_t, df_qv, df_qt1, df_qt2, dat_list = make_df(input, calc.result(), ix)
+    df_p, df_c, df_t, df_qv, df_qt1, df_qt2, dat_list = make_df(calc.result(), ix)
     
     opt = input['opt'] if 'opt' in input else OPT_GRAPH
     output_calc(dat_list, opt)
 
-def make_df(input, res, ix):
+def make_df(res, ix):
     dat_list = []
 
     if len(res[0]) != 0:    
@@ -497,6 +497,7 @@ def set_vent_net(vn):
     i = 0
     for nt in vn:
         for n1n2 in get_network(nt):
+            print(n1n2)
             if 'type' not in vn[nt]:
                 if   ('alpha'  in vn[nt]) and ('area' in vn[nt]):  vn_type = vt.VN_SIMPLE
                 elif ('a'      in vn[nt]) and ('n'    in vn[nt]):  vn_type = vt.VN_GAP
