@@ -164,46 +164,32 @@ def run_calc(input):                                                            
     if 'vn' not in input:   input['vn'] = {}
     if 'tn' not in input:   input['tn'] = {}
 
-    logger.info('Set calc status.')
+    
     if 'index' in input:    set_calc_status(input)                                      #計算条件を設定
     else:                   raise Exception('ERROR: index が存在しません。')             #indexが無ければエラー
-
-    logger.info('Set Ground.')
+    
     if 'ground' in input:   input = set_ground(input)
-
-    logger.info('set Wall')
     if 'wall' in input:     input = set_wall(input)
-
-    logger.info('set_glass')
     if 'glass' in input:    input = set_glass(input)
 
-    logger.info('Add Capacity.')   
+       
     if 'sn' in input:       input = add_capa(input)                                      #熱容量を設定
     else:                   raise Exception('ERROR: ノード(sn)が存在しません。')           #sn（ノード）が無ければエラー
 
-    logger.info('Set Aircon1.')
     if 'aircon' in input:   input = set_aircon1(input)                                   #エアコンをセット
-
-    logger.info('Set Solar.')
     if 'solar' in input:    input = set_solar(input)
-
-    logger.info('Set Heater.')
     if 'heater' in input:   input = set_heater(input)
 
     #with open('calc.json', 'w') as f:                                                   #計算入力を　calc.jsonに格納
     #    json.dump(input, f, ensure_ascii = False, indent = 4)
 
-    logger.info('Set SimNode.')
     if 'sn' in input:       set_sim_node(input['sn'])                                   #sn（ノード）の設定
     else:                   raise Exception('ERROR: ノード(sn)が存在しません。')          #sn（ノード）が無ければエラー
 
-    logger.info('Set VentNet.')
     if 'vn' in input:       set_vent_net(input['vn'])                                   #vn（換気回路網）の設定
-
-    logger.info('Set ThrmNet.')
     if 'tn' in input:       set_thrm_net(input['tn'])                                   #tn（熱回路網）の設定
 
-    logger.info('Set Aircon2.')
+    
     if 'aircon' in input:   set_aircon2(input)
 
     logger.info('sts     ' + str([calc.sts.length, calc.sts.t_step, calc.sts.solve, 
@@ -225,56 +211,13 @@ def run_calc(input):                                                            
     e_time = time.time() - s_time    
     logger.info("Finish vtsim calc. calc time = {0}".format(e_time * 1000) + "[ms]")
 
-    ix = pd.to_datetime(input['index'], format='%Y/%m/%d %H:%M:%S')
-    
-    dat_list = make_df(calc.result(), ix)
-    
+    dat_list = make_df(calc.result(), pd.to_datetime(input['index'], format='%Y/%m/%d %H:%M:%S'))
     opt = input['opt'] if 'opt' in input else OPT_GRAPH
+
     output_calc(dat_list, opt)
 
-def make_df(res, ix):
-    global df_p, df_c, df_t, df_qv, df_qt1, df_qt2
-    dat_list = []
-
-    if len(res[0]) != 0:    
-        df_p  = pd.DataFrame(np.array(res[0]).T,  index = ix, columns = calc.node.keys())
-        dat_list.append({'fn': 'vent_p.csv',   'title': '圧力',  'unit': '[Pa]', 'df': df_p})
-    else:
-        df_p = None
-
-    if len(res[1]) != 0:    
-        df_c  = pd.DataFrame(np.array(res[1]).T,  index = ix, columns = calc.node.keys())
-        dat_list.append({'fn': 'vent_c.csv',   'title': '濃度',  'unit': '[個/L]', 'df': df_c})
-    else:
-        df_c = None
-
-    if len(res[2]) != 0:    
-        df_t  = pd.DataFrame(np.array(res[2]).T,  index = ix, columns = calc.node.keys())
-        dat_list.append({'fn': 'them_t.csv',   'title': '温度',  'unit': '[℃]', 'df': df_t})
-    else:
-        df_t = None
-
-    if len(res[3]) != 0:    
-        df_qv  = pd.DataFrame(np.array(res[3]).T,  index = ix, columns = calc.v_net.keys())
-        dat_list.append({'fn': 'vent_qv.csv',  'title': '風量',  'unit': '[m3/s]', 'df': df_qv})
-    else:
-        df_qv = None
-
-    if len(res[4]) != 0:    
-        df_qt1 = pd.DataFrame(np.array(res[4]).T,  index = ix, columns = calc.v_net.keys())
-        dat_list.append({'fn': 'thrm_qt1.csv', 'title': '熱量1', 'unit': '[W]', 'df': df_qt1})
-    else:
-        df_qt1 = None
-
-    if len(res[5]) != 0:    
-        df_qt2 = pd.DataFrame(np.array(res[5]).T,  index = ix, columns = calc.t_net.keys())
-        dat_list.append({'fn': 'thrm_qt2.csv', 'title': '熱量2', 'unit': '[W]', 'df': df_qt2})
-    else:
-        df_qt2 = None
-
-    return dat_list
-
 def set_calc_status(input):
+    logger.info('Set calc status.')
     sts  = vt.CalcStatus()
 
     ix = pd.to_datetime(input['index'])
@@ -296,16 +239,19 @@ def set_calc_status(input):
     calc.setup(sts)
 
 def set_ground(input):
+    logger.info('Set Ground.')
     for g in input['ground']:
         gnd = input['ground'][g]
         n1, n2, sfx = get_n1n2(g)
-        input['sn'][n1 + '_s' + sfx] = {'t_flag': vt.SN_CALC}
-        input['tn'][n1 +              ' -> ' + n1 + '_s' + sfx] = {'cdtc':    gnd['area'] / gnd['rg']}
-        input['tn'][n1 + '_s' + sfx + ' -> ' + n2             ] = {'area':    gnd['area'],  'phi_0':   gnd['phi_0'],
-                                                                   'cof_r':   gnd['cof_r'], 'cof_phi': gnd['cof_phi']}
+        input['sn'][n1 + '_G_is' + sfx] = {'t_flag': vt.SN_CALC}
+        input['tn'][n1 +                 ' -> ' + n1 + '_G_is' + sfx] = {'cdtc':    gnd['area'] / gnd['rg']}
+        input['tn'][n1 + '_G_is' + sfx + ' -> ' + n2                ] = {'area':    gnd['area'],  'phi_0':   gnd['phi_0'],
+                                                                         'cof_r':   gnd['cof_r'], 'cof_phi': gnd['cof_phi']}
     return input
 
 def set_wall(input):
+    logger.info('set Wall')
+
     for w in input['wall']:
         wl = input['wall'][w]
 
@@ -331,6 +277,7 @@ def set_wall(input):
     return input
 
 def set_glass(input):
+    logger.info('set_glass')
     for g in input['glass']:
         gl = input['glass'][g]
 
@@ -352,6 +299,7 @@ def set_glass(input):
     return input
 
 def add_capa(input):    
+    logger.info('Add Capacity.')
     for n in [n for n in input['sn'] if 'capa' in input['sn'][n]]:                              #熱容量の設定のあるノード
         nc = n + '_c'
         
@@ -364,6 +312,7 @@ def add_capa(input):
     return input
 
 def set_aircon1(input):
+    logger.info('Set Aircon1.')
     for a in input['aircon']:
         ac = input['aircon'][a]
         ac_in, ac_out = a + '_in', a + '_out'
@@ -387,6 +336,7 @@ def set_aircon1(input):
     return input
 
 def set_solar(input):
+    logger.info('Set Solar.')
     name = ['Ins_T_H', 'Ins_W_E', 'Ins_W_S', 'Ins_W_W', 'Ins_W_N', 'Ins_W_H',
                        'Ins_G_E', 'Ins_G_S', 'Ins_G_W', 'Ins_G_N', 'Ins_G_H'] 
     
@@ -398,6 +348,7 @@ def set_solar(input):
     return input
 
 def set_heater(input):
+    logger.info('Set Heater.')
     for h in input['heater']:
         ht = input['heater'][h]
         input['sn'][h] = {'h_input': ht}
@@ -405,6 +356,7 @@ def set_heater(input):
     return input
 
 def set_aircon2(input):
+    logger.info('Set Aircon2.')
     for a in input['aircon']:
         ac = input['aircon'][a]
         ac_in, ac_out, n3 = a + '_in', a + '_out', ac['set']
@@ -432,10 +384,11 @@ def get_node(s):
     return o_node
 
 def set_sim_node(sn):
+    logger.info('Set SimNode.')
     i = 0
     for n in sn:
         for nn in get_node(n):
-            logger.info('setting node:' + nn)
+            logger.info('ノードを設定しています。' + nn)
             calc.set_node(nn, i)
             v_flag = sn[n]['v_flag'] if 'v_flag' in sn[n] else vt.SN_NONE
             c_flag = sn[n]['c_flag'] if 'c_flag' in sn[n] else vt.SN_NONE
@@ -478,9 +431,11 @@ def get_network(s):
     return o_network
 
 def set_vent_net(vn):
+    logger.info('Set VentNet.')
     i = 0
     for nt in vn:
         for n1n2 in get_network(nt):
+            logger.info('換気ネットワークを設定しています。' + n1n2)
             if 'type' not in vn[nt]:
                 if   ('alpha'  in vn[nt]) and ('area' in vn[nt]):  vn_type = vt.VN_SIMPLE
                 elif ('a'      in vn[nt]) and ('n'    in vn[nt]):  vn_type = vt.VN_GAP
@@ -525,9 +480,11 @@ def set_vent_net(vn):
             i = i + 1
 
 def set_thrm_net(tn):
+    logger.info('Set ThrmNet.')
     i = 0
     for nt in tn:
         for n1n2 in get_network(nt):
+            logger.info('Setting Thrmnet :' + n1n2)
             if 'type' not in tn[nt]:
                 if    'ms'       in tn[nt]:                            tn_type = vt.TN_SOLAR
                 elif ('phi_0'    in tn[nt]) and ('cof_r'   in tn[nt]): tn_type = vt.TN_GROUND
@@ -563,6 +520,48 @@ def set_thrm_net(tn):
                 calc.tn[i].cof_r   = tn[nt]['cof_r']
                 calc.tn[i].cof_phi = tn[nt]['cof_phi']                                     #地盤熱応答、行列設定不可（面積と断熱性能はOK）         
             i = i + 1
+
+def make_df(res, ix):
+    global df_p, df_c, df_t, df_qv, df_qt1, df_qt2
+    dat_list = []
+
+    if len(res[0]) != 0:    
+        df_p  = pd.DataFrame(np.array(res[0]).T,  index = ix, columns = calc.node.keys())
+        dat_list.append({'fn': 'vent_p.csv',   'title': '圧力',  'unit': '[Pa]', 'df': df_p})
+    else:
+        df_p = None
+
+    if len(res[1]) != 0:    
+        df_c  = pd.DataFrame(np.array(res[1]).T,  index = ix, columns = calc.node.keys())
+        dat_list.append({'fn': 'vent_c.csv',   'title': '濃度',  'unit': '[個/L]', 'df': df_c})
+    else:
+        df_c = None
+
+    if len(res[2]) != 0:    
+        df_t  = pd.DataFrame(np.array(res[2]).T,  index = ix, columns = calc.node.keys())
+        dat_list.append({'fn': 'them_t.csv',   'title': '温度',  'unit': '[℃]', 'df': df_t})
+    else:
+        df_t = None
+
+    if len(res[3]) != 0:    
+        df_qv  = pd.DataFrame(np.array(res[3]).T,  index = ix, columns = calc.v_net.keys())
+        dat_list.append({'fn': 'vent_qv.csv',  'title': '風量',  'unit': '[m3/s]', 'df': df_qv})
+    else:
+        df_qv = None
+
+    if len(res[4]) != 0:    
+        df_qt1 = pd.DataFrame(np.array(res[4]).T,  index = ix, columns = calc.v_net.keys())
+        dat_list.append({'fn': 'thrm_qt1.csv', 'title': '熱量1', 'unit': '[W]', 'df': df_qt1})
+    else:
+        df_qt1 = None
+
+    if len(res[5]) != 0:    
+        df_qt2 = pd.DataFrame(np.array(res[5]).T,  index = ix, columns = calc.t_net.keys())
+        dat_list.append({'fn': 'thrm_qt2.csv', 'title': '熱量2', 'unit': '[W]', 'df': df_qt2})
+    else:
+        df_qt2 = None
+
+    return dat_list
 
 def output_calc(dat_list, opt):
     if opt == OPT_CSV or opt == OPT_GRAPH:
