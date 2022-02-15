@@ -192,6 +192,7 @@ def run_calc(input):                                                            
     
     if 'aircon' in input:   set_aircon2(input)
 
+    logger.info('******* check vtsim c++ data *******')
     logger.info('sts     ' + str([calc.sts.length, calc.sts.t_step, calc.sts.solve, 
                                   calc.sts.step_p, calc.sts.vent_err, calc.sts.step_t, calc.sts.thrm_err,
                                   calc.sts.conv_err, calc.sts.sor_ratio, calc.sts.sor_err]))
