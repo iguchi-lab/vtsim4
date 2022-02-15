@@ -433,9 +433,10 @@ def get_node(s):
 
 def set_sim_node(sn):
     i = 0
-    for nn in sn:
-        for n in get_node(nn):
-            calc.set_node(n, i)
+    for n in sn:
+        for nn in get_node(n):
+            logger.info('setting node:' + nn)
+            calc.set_node(nn, i)
             v_flag = sn[n]['v_flag'] if 'v_flag' in sn[n] else vt.SN_NONE
             c_flag = sn[n]['c_flag'] if 'c_flag' in sn[n] else vt.SN_NONE
             t_flag = sn[n]['t_flag'] if 't_flag' in sn[n] else vt.SN_NONE
