@@ -197,9 +197,6 @@ def run_calc(input):                                                            
     if 'sn' in input:       set_sim_node(input['sn'])                                   #sn（ノード）の設定
     else:                   raise Exception('ERROR: ノード(sn)が存在しません。')          #sn（ノード）が無ければエラー
 
-    #logger.info('Set VentNet Circulate')
-    #if 'vn_c' in input:     input = set_vent_net_c(input)
-
     logger.info('Set VentNet.')
     if 'vn' in input:       set_vent_net(input['vn'])                                   #vn（換気回路網）の設定
 
@@ -436,9 +433,9 @@ def get_node(s):
 
 def set_sim_node(sn):
     i = 0
-    for n in sn:
-        for nn in get_node(n):
-            calc.set_node(nn, i)
+    for nn in sn:
+        for n in get_node(nn):
+            calc.set_node(n, i)
             v_flag = sn[n]['v_flag'] if 'v_flag' in sn[n] else vt.SN_NONE
             c_flag = sn[n]['c_flag'] if 'c_flag' in sn[n] else vt.SN_NONE
             t_flag = sn[n]['t_flag'] if 't_flag' in sn[n] else vt.SN_NONE
@@ -466,21 +463,6 @@ def get_n1n2(nt):
     if s.count('->') >= 2:  raise Exception('ERROR: キーに -> が2回以上出現します')
 
     return s.split('->')[0], s.split('->')[1], sfx
-
-""""
-def set_vent_net_c(input):
-    for vnc in input['vn_c']:
-        name = vnc.replace(' ', '').split('->')
-        for i in range(len(name) - 1):
-            nn = name[i] + ' -> ' + name[i + 1]
-            j = 1
-            while nn in input['vn']:
-                nn = name[i] + ' -> ' + name[i + 1] + ' : ' + str(j)
-                j = j + 1
-            input['vn'][nn] = input['vn_c'][vnc]
-
-    return input
-"""
 
 def get_network(s):
     o_network = []
