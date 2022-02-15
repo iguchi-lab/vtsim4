@@ -206,6 +206,7 @@ def run_calc(input):                                                            
     logger.info('i_vn_ac ' + str(calc.i_vn_ac))
     logger.info('i_tn_ac ' + str(calc.i_tn_ac))
 
+    logger.info('******* start vtsim c++ calc *******')
     logger.info('Start vtsim calc.')
     s_time = time.time()
     calc.calc()                                                                         #計算
