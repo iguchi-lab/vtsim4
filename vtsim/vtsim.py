@@ -197,8 +197,8 @@ def run_calc(input):                                                            
     if 'sn' in input:       set_sim_node(input['sn'])                                   #sn（ノード）の設定
     else:                   raise Exception('ERROR: ノード(sn)が存在しません。')          #sn（ノード）が無ければエラー
 
-    logger.info('Set VentNet Circulate')
-    if 'vn_c' in input:     input = set_vent_net_c(input)
+    #logger.info('Set VentNet Circulate')
+    #if 'vn_c' in input:     input = set_vent_net_c(input)
 
     logger.info('Set VentNet.')
     if 'vn' in input:       set_vent_net(input['vn'])                                   #vn（換気回路網）の設定
@@ -214,8 +214,8 @@ def run_calc(input):                                                            
                                   calc.sts.conv_err, calc.sts.sor_ratio, calc.sts.sor_err]))
     logger.info('sn      ' + str([n.i for n in calc.sn]))
     logger.info('node    ' + str(calc.node))
-    logger.info('vn      ' + str([[nt.i1, nt.i2] for nt in calc.vn]))
-    logger.info('tn      ' + str([[nt.i1, nt.i2] for nt in calc.tn]))
+    logger.info('vn      ' + str(calc.v_net))
+    logger.info('tn      ' + str(calc.t_net))
     logger.info('v_idc   ' + str(calc.v_idc))
     logger.info('c_idc   ' + str(calc.c_idc))
     logger.info('t_idc   ' + str(calc.t_idc))
@@ -239,37 +239,37 @@ def make_df(input, res, ix):
     dat_list = []
 
     if len(res[0]) != 0:    
-        df_p  = pd.DataFrame(np.array(res[0]).T,  index = ix, columns = input['sn'].keys())
+        df_p  = pd.DataFrame(np.array(res[0]).T,  index = ix, columns = calc.node.keys())
         dat_list.append({'fn': 'vent_p.csv',   'title': '圧力',  'unit': '[Pa]', 'df': df_p})
     else:
         df_p = None
 
     if len(res[1]) != 0:    
-        df_c  = pd.DataFrame(np.array(res[1]).T,  index = ix, columns = input['sn'].keys())
+        df_c  = pd.DataFrame(np.array(res[1]).T,  index = ix, columns = calc.node.keys())
         dat_list.append({'fn': 'vent_c.csv',   'title': '濃度',  'unit': '[個/L]', 'df': df_c})
     else:
         df_c = None
 
     if len(res[2]) != 0:    
-        df_t  = pd.DataFrame(np.array(res[2]).T,  index = ix, columns = input['sn'].keys())
+        df_t  = pd.DataFrame(np.array(res[2]).T,  index = ix, columns = calc.node.keys())
         dat_list.append({'fn': 'them_t.csv',   'title': '温度',  'unit': '[℃]', 'df': df_t})
     else:
         df_t = None
 
     if len(res[3]) != 0:    
-        df_qv  = pd.DataFrame(np.array(res[3]).T,  index = ix, columns = input['vn'].keys())
+        df_qv  = pd.DataFrame(np.array(res[3]).T,  index = ix, columns = calc.v_net.keys())
         dat_list.append({'fn': 'vent_qv.csv',  'title': '風量',  'unit': '[m3/s]', 'df': df_qv})
     else:
         df_qv = None
 
     if len(res[4]) != 0:    
-        df_qt1 = pd.DataFrame(np.array(res[4]).T,  index = ix, columns = input['vn'].keys())
+        df_qt1 = pd.DataFrame(np.array(res[4]).T,  index = ix, columns = calc.v_net.keys())
         dat_list.append({'fn': 'thrm_qt1.csv', 'title': '熱量1', 'unit': '[W]', 'df': df_qt1})
     else:
         df_qt1 = None
 
     if len(res[5]) != 0:    
-        df_qt2 = pd.DataFrame(np.array(res[5]).T,  index = ix, columns = input['tn'].keys())
+        df_qt2 = pd.DataFrame(np.array(res[5]).T,  index = ix, columns = calc.t_net.keys())
         dat_list.append({'fn': 'thrm_qt2.csv', 'title': '熱量2', 'unit': '[W]', 'df': df_qt2})
     else:
         df_qt2 = None
@@ -320,12 +320,12 @@ def set_wall(input):
         input['sn'][n1 + '_os' + sfx] = {'t_flag': vt.SN_CALC}
 
         if 'capa_w' in wl:
-            input['sn'][n1 + '_is' + sfx] = {'capa': area * wl['capa_w'] / 2}
-            input['sn'][n1 + '_os' + sfx] = {'capa': area * wl['capa_w'] / 2}
+            input['sn'][n1 + '_Wis' + sfx] = {'capa': area * wl['capa_w'] / 2}
+            input['sn'][n1 + '_Wos' + sfx] = {'capa': area * wl['capa_w'] / 2}
 
-        input['tn'][n1 +               ' -> ' + n1 + '_is' + sfx] = {'cdtc': area * alpha_1}
-        input['tn'][n1 + '_is' + sfx + ' -> ' + n1 + '_os' + sfx] = {'cdtc': area * wl['U_w']}
-        input['tn'][n1 + '_os' + sfx + ' -> ' + n2              ] = {'cdtc': area * alpha_2}
+        input['tn'][n1 +                ' -> ' + n1 + '_Wis' + sfx] = {'cdtc': area * alpha_1}
+        input['tn'][n1 + '_Wis' + sfx + ' -> ' + n1 + '_Wos' + sfx] = {'cdtc': area * wl['U_w']}
+        input['tn'][n1 + '_Wos' + sfx + ' -> ' + n2               ] = {'cdtc': area * alpha_2}
 
         if 'solar' in wl:
             input['tn'][n1 + '_os' + sfx + ' -> ' + wl['solar']] = {'ms': area * wl['eta_w']}
@@ -341,12 +341,12 @@ def set_glass(input):
         alpha_1 = gl['alpha_1'] if 'alpha_1' in gl else 9.0
         alpha_2 = gl['alpha_2'] if 'alpha_2' in gl else 25.0
 
-        input['sn'][n1 + '_is' + sfx] = {'t_flag': vt.SN_CALC}
-        input['sn'][n1 + '_os' + sfx] = {'t_flag': vt.SN_CALC}
+        input['sn'][n1 + '_Gis' + sfx] = {'t_flag': vt.SN_CALC}
+        input['sn'][n1 + '_Gos' + sfx] = {'t_flag': vt.SN_CALC}
 
-        input['tn'][n1 +               ' -> ' + n1 + '_is' + sfx] = {'cdtc': area * alpha_1}
-        input['tn'][n1 + '_is' + sfx + ' -> ' + n1 + '_os' + sfx] = {'cdtc': area * gl['U_w']}
-        input['tn'][n1 + '_os' + sfx + ' -> ' + n2              ] = {'cdtc': area * alpha_2}
+        input['tn'][n1 +                ' -> ' + n1 + '_Gis' + sfx] = {'cdtc': area * alpha_1}
+        input['tn'][n1 + '_Gis' + sfx + ' -> ' + n1 + '_Gos' + sfx] = {'cdtc': area * gl['U_w']}
+        input['tn'][n1 + '_Gos' + sfx + ' -> ' + n2               ] = {'cdtc': area * alpha_2}
 
         if 'solar' in gl:
             input['tn'][n1 + ' -> ' + gl['solar']] = {'ms': area * gl['eta_w']}
@@ -417,24 +417,43 @@ def set_aircon2(input):
         for i, nt in enumerate(calc.tn):
             if nt.tn_type == vt.TN_AIRCON:
                 if (calc.node[n3]    == nt.i1) and (calc.node[ac_out] == nt.i2):    calc.tn_aircon_add(i)
-        
-def set_sim_node(sn):
-    for i, n in enumerate(sn):
-        calc.set_node(n, i)
-        v_flag = sn[n]['v_flag'] if 'v_flag' in sn[n] else vt.SN_NONE
-        c_flag = sn[n]['c_flag'] if 'c_flag' in sn[n] else vt.SN_NONE
-        t_flag = sn[n]['t_flag'] if 't_flag' in sn[n] else vt.SN_NONE
-        calc.sn_add(i, [v_flag, c_flag, t_flag])
 
-        if 'p'           in sn[n]:    calc.sn[i].p     = to_list_f(sn[n]['p'])                    #圧力、行列で設定可能
-        if 'c'           in sn[n]:    calc.sn[i].c     = to_list_f(sn[n]['c'])                    #濃度、行列で設定可能
-        if 't'           in sn[n]:    calc.sn[i].t     = to_list_f(sn[n]['t'])                    #温度、行列で設定可能
-        if 'insolation'  in sn[n]:    calc.sn[i].h_sr  = to_list_f(sn[n]['insolation'])           #日射量、行列で設定可能
-        if 'h_input'     in sn[n]:    calc.sn[i].h_inp = to_list_f(sn[n]['h_input'])              #発熱、行列で設定可能
-        if 'v'           in sn[n]:    calc.sn[i].v     = to_list_f(sn[n]['v'])                    #気積、行列で設定可能
-        if 'm'           in sn[n]:    calc.sn[i].m     = to_list_f(sn[n]['m'])                    #発生量、行列で設定可能
-        if 'beta'        in sn[n]:    calc.sn[i].beta  = to_list_f(sn[n]['beta'])                 #濃度減少率、行列で設定可能
-        if 's_i'         in sn[n]:    calc.sn[i].s_i   = calc.node[sn[n]['s_i']]
+def sep_sfx(s, opt = False):
+    if s.find(':') != -1:       
+        if opt: 
+            return s[:s.find(':')] + '(' + s[s.find(':') + 1:] + ')'
+        else:
+            print(s + ' の添字 ' + s[s.find(':'):] + ' は無視されました。')
+            return s[:s.find(':')]
+    else:                      
+        return s
+
+def get_node(s):
+    o_node = []
+    for n in s.replace(' ','').split(','):  o_node.append(sep_sfx(n))
+    return o_node
+
+def set_sim_node(sn):
+    i = 0
+    for n in sn:
+        for nn in get_node(n):
+            calc.set_node(nn, i)
+            v_flag = sn[n]['v_flag'] if 'v_flag' in sn[n] else vt.SN_NONE
+            c_flag = sn[n]['c_flag'] if 'c_flag' in sn[n] else vt.SN_NONE
+            t_flag = sn[n]['t_flag'] if 't_flag' in sn[n] else vt.SN_NONE
+            calc.sn_add(i, [v_flag, c_flag, t_flag])
+
+            if 'p'           in sn[n]:    calc.sn[i].p     = to_list_f(sn[n]['p'])                    #圧力、行列で設定可能
+            if 'c'           in sn[n]:    calc.sn[i].c     = to_list_f(sn[n]['c'])                    #濃度、行列で設定可能
+            if 't'           in sn[n]:    calc.sn[i].t     = to_list_f(sn[n]['t'])                    #温度、行列で設定可能
+            if 'insolation'  in sn[n]:    calc.sn[i].h_sr  = to_list_f(sn[n]['insolation'])           #日射量、行列で設定可能
+            if 'h_input'     in sn[n]:    calc.sn[i].h_inp = to_list_f(sn[n]['h_input'])              #発熱、行列で設定可能
+            if 'v'           in sn[n]:    calc.sn[i].v     = to_list_f(sn[n]['v'])                    #気積、行列で設定可能
+            if 'm'           in sn[n]:    calc.sn[i].m     = to_list_f(sn[n]['m'])                    #発生量、行列で設定可能
+            if 'beta'        in sn[n]:    calc.sn[i].beta  = to_list_f(sn[n]['beta'])                 #濃度減少率、行列で設定可能
+            if 's_i'         in sn[n]:    calc.sn[i].s_i   = calc.node[sn[n]['s_i']]
+
+            i = i + 1
 
 def get_n1n2(nt):  
     s = nt.replace(' ', '')
@@ -445,9 +464,9 @@ def get_n1n2(nt):
     if s.find('->') == -1:  raise Exception('ERROR: vnもしくはtnのキーに -> が存在しません')
     if s.count('->') >= 2:  raise Exception('ERROR: キーに -> が2回以上出現します')
 
-    n = s.split('->')
-    return n[0], n[1], sfx
+    return s.split('->')[0], s.split('->')[1], sfx
 
+""""
 def set_vent_net_c(input):
     for vnc in input['vn_c']:
         name = vnc.replace(' ', '').split('->')
@@ -460,74 +479,94 @@ def set_vent_net_c(input):
             input['vn'][nn] = input['vn_c'][vnc]
 
     return input
+"""
+
+def get_network(s):
+    o_network = []
+    for nt in s.replace(' ', '').split(','):
+        if nt.find('->') == -1:
+            raise Exception('ERROR: vnもしくはtnのキーに -> が存在しません')
+        else:
+            nodes = nt.split('->') 
+            for i in range(len(nodes) - 1):
+                o_network.append(sep_sfx(nodes[i]) + ' -> ' + sep_sfx(nodes[i + 1]))
+
+    return o_network
 
 def set_vent_net(vn):
-    for i, nt in enumerate(vn):
-        if 'type' not in vn[nt]:
-            if   ('alpha'  in vn[nt]) and ('area' in vn[nt]):  vn_type = vt.VN_SIMPLE
-            elif ('a'      in vn[nt]) and ('n'    in vn[nt]):  vn_type = vt.VN_GAP
-            elif ('qmax'   in vn[nt]) and ('pmax' in vn[nt]):  vn_type = vt.VN_FAN
-            elif  'vol'    in vn[nt]:                          vn_type = vt.VN_FIX
-            elif  'ac_vol' in vn[nt]:                          vn_type = vt.VN_AIRCON
-            else:                                             raise Exception('ERROR: ' + nt + 'のvn_typeを認識できません')    
-        else:
-            vn_type = vn[nt]['type']
+    i = 0
+    for nt in vn:
+        for n1n2 in get_network(nt):
+            if 'type' not in vn[nt]:
+                if   ('alpha'  in vn[nt]) and ('area' in vn[nt]):  vn_type = vt.VN_SIMPLE
+                elif ('a'      in vn[nt]) and ('n'    in vn[nt]):  vn_type = vt.VN_GAP
+                elif ('qmax'   in vn[nt]) and ('pmax' in vn[nt]):  vn_type = vt.VN_FAN
+                elif  'vol'    in vn[nt]:                          vn_type = vt.VN_FIX
+                elif  'ac_vol' in vn[nt]:                          vn_type = vt.VN_AIRCON
+                else:                                             raise Exception('ERROR: ' + nt + 'のvn_typeを認識できません')    
+            else:
+                vn_type = vn[nt]['type']
 
-        h1 = to_list_f(vn[nt]['h1']) if 'h1' in vn[nt] else to_list_f(0.0)                          #高さ1、行列設定不可
-        h2 = to_list_f(vn[nt]['h2']) if 'h2' in vn[nt] else to_list_f(0.0)                          #高さ2、行列設定不可
-        n1, n2, _ = get_n1n2(nt)
-        if n1 not in calc.node: raise Exception('ERROR: ノード(sn)の中に ' + n1 + ' がありません。')
-        if n2 not in calc.node: raise Exception('ERROR: ノード(sn)の中に ' + n2 + ' がありません。')
+            h1 = to_list_f(vn[nt]['h1']) if 'h1' in vn[nt] else to_list_f(0.0)                          #高さ1、行列設定不可
+            h2 = to_list_f(vn[nt]['h2']) if 'h2' in vn[nt] else to_list_f(0.0)                          #高さ2、行列設定不可
+            n1, n2, _ = get_n1n2(n1n2)
+            if n1 not in calc.node: raise Exception('ERROR: ノード(sn)の中に ' + n1 + ' がありません。')
+            if n2 not in calc.node: raise Exception('ERROR: ノード(sn)の中に ' + n2 + ' がありません。')
 
-        calc.vn_add(i, calc.node[n1], calc.node[n2], vn_type, h1, h2)
-        
-        if vn_type == vt.VN_FIX:       
-            calc.vn[i].qv = to_list_f(vn[nt]['vol'])                                                #風量固定値、行列で設定可能
-        if vn_type == vt.VN_AIRCON:
-            calc.vn[i].qv = to_list_f(vn[nt]['ac_vol'])                                             #風量固定値、行列で設定可能
-        if vn_type == vt.VN_SIMPLE:                                                                 
-            calc.vn[i].alpha = to_list_f(vn[nt]['alpha'])
-            calc.vn[i].area  = to_list_f(vn[nt]['area'])                                            #単純開口、行列で設定可能
-        if vn_type == vt.VN_GAP:           
-            calc.vn[i].a     = to_list_f(vn[nt]['a'])
-            calc.vn[i].n     = to_list_f(vn[nt]['n'])                                               #隙間、行列で設定可能
-        if vn_type == vt.VN_FAN:           
-            calc.vn[i].q_max = to_list_f(vn[nt]['qmax']) 
-            calc.vn[i].p_max = to_list_f(vn[nt]['pmax']) 
-            calc.vn[i].q1    = to_list_f(vn[nt]['q1'])
-            calc.vn[i].p1    = to_list_f(vn[nt]['p1'])                                              #ファン、行列で設定可能
-        calc.vn[i].eta = to_list_f(vn[nt]['eta']) if 'eta' in vn[nt] else to_list_f(0.0)            #粉じん除去率、行列で設定可能
+            calc.vn_add(i, n1n2, calc.node[n1], calc.node[n2], vn_type, h1, h2)
+            
+            if vn_type == vt.VN_FIX:       
+                calc.vn[i].qv = to_list_f(vn[nt]['vol'])                                                #風量固定値、行列で設定可能
+            if vn_type == vt.VN_AIRCON:
+                calc.vn[i].qv = to_list_f(vn[nt]['ac_vol'])                                             #風量固定値、行列で設定可能
+            if vn_type == vt.VN_SIMPLE:                                                                 
+                calc.vn[i].alpha = to_list_f(vn[nt]['alpha'])
+                calc.vn[i].area  = to_list_f(vn[nt]['area'])                                            #単純開口、行列で設定可能
+            if vn_type == vt.VN_GAP:           
+                calc.vn[i].a     = to_list_f(vn[nt]['a'])
+                calc.vn[i].n     = to_list_f(vn[nt]['n'])                                               #隙間、行列で設定可能
+            if vn_type == vt.VN_FAN:           
+                calc.vn[i].q_max = to_list_f(vn[nt]['qmax']) 
+                calc.vn[i].p_max = to_list_f(vn[nt]['pmax']) 
+                calc.vn[i].q1    = to_list_f(vn[nt]['q1'])
+                calc.vn[i].p1    = to_list_f(vn[nt]['p1'])                                              #ファン、行列で設定可能
+            calc.vn[i].eta = to_list_f(vn[nt]['eta']) if 'eta' in vn[nt] else to_list_f(0.0)            #粉じん除去率、行列で設定可能
+
+            i = i + 1
 
 def set_thrm_net(tn):
-    for i, nt in enumerate(tn):
-        if 'type' not in tn[nt]:
-            if    'ms'       in tn[nt]:                            tn_type = vt.TN_SOLAR
-            elif ('phi_0'    in tn[nt]) and ('cof_r'   in tn[nt]): tn_type = vt.TN_GROUND
-            elif ('ac_mode'  in tn[nt]) and ('pre_tmp' in tn[nt]): tn_type = vt.TN_AIRCON
-            elif  'cdtc'     in tn[nt]:                            tn_type = vt.TN_SIMPLE
-            elif tn[nt] == {}:                                     tn_type = vt.TN_HEATER
-            else:                                                  raise Exception('ERROR: ' + nt + 'のtn_typeを認識できません') 
-        else:
-            tn_type = tn[nt]['type']
+    i = 0
+    for nt in tn:
+        for n1n2 in get_network(nt):
+            if 'type' not in tn[nt]:
+                if    'ms'       in tn[nt]:                            tn_type = vt.TN_SOLAR
+                elif ('phi_0'    in tn[nt]) and ('cof_r'   in tn[nt]): tn_type = vt.TN_GROUND
+                elif ('ac_mode'  in tn[nt]) and ('pre_tmp' in tn[nt]): tn_type = vt.TN_AIRCON
+                elif  'cdtc'     in tn[nt]:                            tn_type = vt.TN_SIMPLE
+                elif tn[nt] == {}:                                     tn_type = vt.TN_HEATER
+                else:                                                  raise Exception('ERROR: ' + nt + 'のtn_typeを認識できません') 
+            else:
+                tn_type = tn[nt]['type']
 
-        n1, n2, _ = get_n1n2(nt)
-        if n1 not in calc.node: raise Exception('ERROR: ノード(sn)の中に ' + n1 + ' がありません。')
-        if n2 not in calc.node: raise Exception('ERROR: ノード(sn)の中に ' + n2 + ' がありません。')
+            n1, n2, _ = get_n1n2(n1n2)
+            if n1 not in calc.node: raise Exception('ERROR: ノード(sn)の中に ' + n1 + ' がありません。')
+            if n2 not in calc.node: raise Exception('ERROR: ノード(sn)の中に ' + n2 + ' がありません。')
 
-        calc.tn_add(i, calc.node[n1], calc.node[n2], tn_type)
+            calc.tn_add(i, n1n2, calc.node[n1], calc.node[n2], tn_type)
 
-        if tn_type == vt.TN_SIMPLE:     
-            calc.tn[i].cdtc = to_list_f(tn[nt]['cdtc'])                                #コンダクタンス、行列設定可能
-        if tn_type == vt.TN_AIRCON:
-            calc.tn[i].ac_mode = to_list_i(tn[nt]['ac_mode']) 
-            calc.tn[i].pre_tmp = to_list_f(tn[nt]['pre_tmp'])                          #エアコン運転モード
-        if tn_type == vt.TN_SOLAR:       
-            calc.tn[i].ms      = to_list_f(tn[nt]['ms'])                               #日射熱取得率、行列設定可能
-        if tn_type == vt.TN_GROUND:     
-            calc.tn[i].area    = to_list_f(tn[nt]['area'])           
-            calc.tn[i].phi_0   = tn[nt]['phi_0']
-            calc.tn[i].cof_r   = tn[nt]['cof_r']
-            calc.tn[i].cof_phi = tn[nt]['cof_phi']                                     #地盤熱応答、行列設定不可（面積と断熱性能はOK）         
+            if tn_type == vt.TN_SIMPLE:     
+                calc.tn[i].cdtc = to_list_f(tn[nt]['cdtc'])                                #コンダクタンス、行列設定可能
+            if tn_type == vt.TN_AIRCON:
+                calc.tn[i].ac_mode = to_list_i(tn[nt]['ac_mode']) 
+                calc.tn[i].pre_tmp = to_list_f(tn[nt]['pre_tmp'])                          #エアコン運転モード
+            if tn_type == vt.TN_SOLAR:       
+                calc.tn[i].ms      = to_list_f(tn[nt]['ms'])                               #日射熱取得率、行列設定可能
+            if tn_type == vt.TN_GROUND:     
+                calc.tn[i].area    = to_list_f(tn[nt]['area'])           
+                calc.tn[i].phi_0   = tn[nt]['phi_0']
+                calc.tn[i].cof_r   = tn[nt]['cof_r']
+                calc.tn[i].cof_phi = tn[nt]['cof_phi']                                     #地盤熱応答、行列設定不可（面積と断熱性能はOK）         
+            i = i + 1
 
 def output_calc(dat_list, opt):
     if opt == OPT_CSV or opt == OPT_GRAPH:
