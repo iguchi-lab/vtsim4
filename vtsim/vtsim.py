@@ -303,8 +303,7 @@ def add_capa(input):
     for n in [n for n in input['sn'] if 'capa' in input['sn'][n]]:                              #熱容量の設定のあるノード
         nc = n + '_c'
         
-        input['sn'][nc] = {'t_flag': vt.SN_DLY, 
-                           's_i':    n}                                                         #計算フラグ、親ノードの設定
+        input['sn'][nc] = {'t_flag': vt.SN_DLY, 's_i': n}                                       #計算フラグ、親ノードの設定
         if 't' in input['sn'][n]:   input['sn'][nc]['t'] = input['sn'][n]['t']                  #初期温度の継承
 
         input['tn'][n + ' -> ' + nc] = {'cdtc': input['sn'][n]['capa'] / calc.sts.t_step}       #熱容量の設定 
@@ -388,7 +387,7 @@ def set_sim_node(sn):
     i = 0
     for n in sn:
         for nn in get_node(n):
-            logger.info('    setting node :' + nn)
+            logger.info('    setting node ' + i + ':' + nn)
             calc.set_node(nn, i)
             v_flag = sn[n]['v_flag'] if 'v_flag' in sn[n] else vt.SN_NONE
             c_flag = sn[n]['c_flag'] if 'c_flag' in sn[n] else vt.SN_NONE
@@ -403,7 +402,9 @@ def set_sim_node(sn):
             if 'v'           in sn[n]:    calc.sn[i].v     = to_list_f(sn[n]['v'])                    #気積、行列で設定可能
             if 'm'           in sn[n]:    calc.sn[i].m     = to_list_f(sn[n]['m'])                    #発生量、行列で設定可能
             if 'beta'        in sn[n]:    calc.sn[i].beta  = to_list_f(sn[n]['beta'])                 #濃度減少率、行列で設定可能
-            if 's_i'         in sn[n]:    calc.sn[i].s_i   = calc.node[sn[n]['s_i']]
+            if 's_i'         in sn[n]:    
+                calc.sn[i].s_i   = calc.node[sn[n]['s_i']]
+                logger.info(sn[n]['s_i'])
 
             i = i + 1
 
@@ -435,7 +436,7 @@ def set_vent_net(vn):
     i = 0
     for nt in vn:
         for n1n2 in get_network(nt):
-            logger.info('    setting ventnet :' + n1n2)
+            logger.info('    setting ventnet ' + i + ':' + n1n2)
             if 'type' not in vn[nt]:
                 if   ('alpha'  in vn[nt]) and ('area' in vn[nt]):  vn_type = vt.VN_SIMPLE
                 elif ('a'      in vn[nt]) and ('n'    in vn[nt]):  vn_type = vt.VN_GAP
@@ -484,7 +485,7 @@ def set_thrm_net(tn):
     i = 0
     for nt in tn:
         for n1n2 in get_network(nt):
-            logger.info('    setting thrmnet :' + n1n2)
+            logger.info('    setting thrmnet ' + i + ':' + n1n2)
             if 'type' not in tn[nt]:
                 if    'ms'       in tn[nt]:                            tn_type = vt.TN_SOLAR
                 elif ('phi_0'    in tn[nt]) and ('cof_r'   in tn[nt]): tn_type = vt.TN_GROUND
