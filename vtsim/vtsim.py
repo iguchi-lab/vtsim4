@@ -316,16 +316,16 @@ def set_wall(input):
         alpha_1 = wl['alpha_1'] if 'alpha_1' in wl else 9.0
         alpha_2 = wl['alpha_2'] if 'alpha_2' in wl else 25.0
 
-        input['sn'][n1 + '_is' + sfx] = {'t_flag': vt.SN_CALC}
-        input['sn'][n1 + '_os' + sfx] = {'t_flag': vt.SN_CALC}
+        input['sn'][n1 + '_W_is' + sfx] = {'t_flag': vt.SN_CALC}
+        input['sn'][n1 + '_W_os' + sfx] = {'t_flag': vt.SN_CALC}
 
         if 'capa_w' in wl:
-            input['sn'][n1 + '_Wis' + sfx] = {'capa': area * wl['capa_w'] / 2}
-            input['sn'][n1 + '_Wos' + sfx] = {'capa': area * wl['capa_w'] / 2}
+            input['sn'][n1 + '_W_is' + sfx] = {'capa': area * wl['capa_w'] / 2}
+            input['sn'][n1 + '_W_os' + sfx] = {'capa': area * wl['capa_w'] / 2}
 
-        input['tn'][n1 +                ' -> ' + n1 + '_Wis' + sfx] = {'cdtc': area * alpha_1}
-        input['tn'][n1 + '_Wis' + sfx + ' -> ' + n1 + '_Wos' + sfx] = {'cdtc': area * wl['U_w']}
-        input['tn'][n1 + '_Wos' + sfx + ' -> ' + n2               ] = {'cdtc': area * alpha_2}
+        input['tn'][n1 +                 ' -> ' + n1 + '_W_is' + sfx] = {'cdtc': area * alpha_1}
+        input['tn'][n1 + '_W_is' + sfx + ' -> ' + n1 + '_W_os' + sfx] = {'cdtc': area * wl['U_w']}
+        input['tn'][n1 + '_W_os' + sfx + ' -> ' + n2                ] = {'cdtc': area * alpha_2}
 
         if 'solar' in wl:
             input['tn'][n1 + '_os' + sfx + ' -> ' + wl['solar']] = {'ms': area * wl['eta_w']}
@@ -341,12 +341,12 @@ def set_glass(input):
         alpha_1 = gl['alpha_1'] if 'alpha_1' in gl else 9.0
         alpha_2 = gl['alpha_2'] if 'alpha_2' in gl else 25.0
 
-        input['sn'][n1 + '_Gis' + sfx] = {'t_flag': vt.SN_CALC}
-        input['sn'][n1 + '_Gos' + sfx] = {'t_flag': vt.SN_CALC}
+        input['sn'][n1 + '_G_is' + sfx] = {'t_flag': vt.SN_CALC}
+        input['sn'][n1 + '_G_os' + sfx] = {'t_flag': vt.SN_CALC}
 
-        input['tn'][n1 +                ' -> ' + n1 + '_Gis' + sfx] = {'cdtc': area * alpha_1}
-        input['tn'][n1 + '_Gis' + sfx + ' -> ' + n1 + '_Gos' + sfx] = {'cdtc': area * gl['U_w']}
-        input['tn'][n1 + '_Gos' + sfx + ' -> ' + n2               ] = {'cdtc': area * alpha_2}
+        input['tn'][n1 +                 ' -> ' + n1 + '_G_is' + sfx] = {'cdtc': area * alpha_1}
+        input['tn'][n1 + '_G_is' + sfx + ' -> ' + n1 + '_G_os' + sfx] = {'cdtc': area * gl['U_w']}
+        input['tn'][n1 + '_G_os' + sfx + ' -> ' + n2                ] = {'cdtc': area * alpha_2}
 
         if 'solar' in gl:
             input['tn'][n1 + ' -> ' + gl['solar']] = {'ms': area * gl['eta_w']}
