@@ -352,7 +352,8 @@ def set_heater(input):
     logger.info('Set Heater.')
     for h in input['heater']:
         ht = input['heater'][h]
-        input['sn'][h] = {'h_input': ht}
+        input['sn'][h] = {'h_input': ht['output']}
+        input['tn'][ht['set'] + ' -> ' + h] = {}
 
     return input
 
