@@ -381,8 +381,8 @@ def set_dust_source(input):
 def set_air_cleaner(input):
     logger.info('Set Air Cleaner.')
     for a in input['air cleaner']:
-        ac = input['air_cleaner'][ac]
-        
+        ac = input['air_cleaner'][a]
+        input['vn'][ac['set']]['eta'] = ac['eta']
     return input
 
 def sep_sfx(s, opt = False):
@@ -478,21 +478,23 @@ def set_vent_net(vn):
             calc.vn_add(i, n1n2, calc.node[n1], calc.node[n2], vn_type, h1, h2)
             
             if vn_type == vt.VN_FIX:       
-                calc.vn[i].qv = to_list_f(vn[nt]['vol'])                                                #風量固定値、行列で設定可能
+                calc.vn[i].qv = to_list_f(vn[nt]['vol'])                                    #風量固定値、行列で設定可能
             if vn_type == vt.VN_AIRCON:
-                calc.vn[i].qv = to_list_f(vn[nt]['ac_vol'])                                             #風量固定値、行列で設定可能
+                calc.vn[i].qv = to_list_f(vn[nt]['ac_vol'])                                 #風量固定値、行列で設定可能
             if vn_type == vt.VN_SIMPLE:                                                                 
                 calc.vn[i].alpha = to_list_f(vn[nt]['alpha'])
-                calc.vn[i].area  = to_list_f(vn[nt]['area'])                                            #単純開口、行列で設定可能
+                calc.vn[i].area  = to_list_f(vn[nt]['area'])                                #単純開口、行列で設定可能
             if vn_type == vt.VN_GAP:           
                 calc.vn[i].a     = to_list_f(vn[nt]['a'])
-                calc.vn[i].n     = to_list_f(vn[nt]['n'])                                               #隙間、行列で設定可能
+                calc.vn[i].n     = to_list_f(vn[nt]['n'])                                   #隙間、行列で設定可能
             if vn_type == vt.VN_FAN:           
                 calc.vn[i].q_max = to_list_f(vn[nt]['qmax']) 
                 calc.vn[i].p_max = to_list_f(vn[nt]['pmax']) 
                 calc.vn[i].q1    = to_list_f(vn[nt]['q1'])
-                calc.vn[i].p1    = to_list_f(vn[nt]['p1'])                                              #ファン、行列で設定可能
-            calc.vn[i].eta = to_list_f(vn[nt]['eta']) if 'eta' in vn[nt] else to_list_f(0.0)            #粉じん除去率、行列で設定可能
+                calc.vn[i].p1    = to_list_f(vn[nt]['p1'])                                  #ファン、行列で設定可能
+            
+            if 'eta' in vn[nt]:
+                calc.vn[i].eta = to_list_f(vn[nt]['eta'])                                   #粉じん除去率、行列で設定可能
 
             i = i + 1
 
