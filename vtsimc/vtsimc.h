@@ -414,8 +414,8 @@ public:
                 for(unsigned int i = 0; i < c_idc.size(); i++){
                     
                     double m;
-                    if(sn[c_idc[i]].m.empty()) m = 0;
-                    else                    m = sn[c_idc[i]].m[ts];
+                    if(sn[c_idc[i]].m.empty())  m = 0;
+                    else                        m = sn[c_idc[i]].m[ts];
 
                     sn[c_idc[i]].c[ts] =  sn[c_idc[i]].c[ts - 1] * exp(-sn[c_idc[i]].beta[ts] * sts.t_step);
                     if(sn[c_idc[i]].beta[ts] == 0){
