@@ -378,6 +378,13 @@ def set_dust_source(input):
         input['sn'][ds['set']]['m'] = ds['m']
     return input
 
+def set_air_cleaner(input):
+    logger.info('Set Air Cleaner.')
+    for a in input['air cleaner']:
+        ac = input['air_cleaner'][ac]
+        
+    return input
+
 def sep_sfx(s, opt = False):
     if s.find(':') != -1:       
         if opt: 
