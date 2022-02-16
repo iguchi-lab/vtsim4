@@ -375,7 +375,7 @@ def set_dust_source(input):
     logger.info('Set Dust Source.')
     for d in input['dust source']:
         ds = input['dust source'][d]
-        input['sn'][ds['set']] = {ds['m']}
+        input['sn'][ds['set']]['m'] = ds['m']
     return input
 
 def sep_sfx(s, opt = False):
