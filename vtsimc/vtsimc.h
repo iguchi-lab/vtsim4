@@ -412,19 +412,29 @@ public:
 
             if(c_idc.size() > 0){
                 for(unsigned int i = 0; i < c_idc.size(); i++){
+                    
+                    double m;
+                    if(sn[c_idc[i]].m.empty()) m = 0;
+                    else                    m = sn[c_idc[i]].m[ts];
+
                     sn[c_idc[i]].c[ts] =  sn[c_idc[i]].c[ts - 1] * exp(-sn[c_idc[i]].beta[ts] * sts.t_step);
                     if(sn[c_idc[i]].beta[ts] == 0){
-                        sn[c_idc[i]].c[ts] += sn[c_idc[i]].m[ts] * sts.t_step / sn[c_idc[i]].v[ts];
+                        sn[c_idc[i]].c[ts] += m * sts.t_step / sn[c_idc[i]].v[ts];
                     }
                     else{                            
-                        sn[c_idc[i]].c[ts] += sn[c_idc[i]].m[ts] / (sn[c_idc[i]].beta[ts] * sn[c_idc[i]].v[ts]) * (1 - exp(-sn[c_idc[i]].beta[ts] * sts.t_step));
+                        sn[c_idc[i]].c[ts] += m / (sn[c_idc[i]].beta[ts] * sn[c_idc[i]].v[ts]) * (1 - exp(-sn[c_idc[i]].beta[ts] * sts.t_step));
                     }
                 }
                 for(unsigned int i = 0; i < vn.size(); i++){
+                    
+                    double eta;
+                    if(vn[i].eta.empty())   eta = 0;
+                    else                    eta = vn[i].eta[ts];
+
                     if(vn[i].qv[ts] > 0 && get<1>(sn[vn[i].i2].flag) == SN_CALC)    
-                        sn[vn[i].i2].c[ts] += vn[i].qv[ts] * (sn[vn[i].i1].c[ts - 1] * (1 - vn[i].eta[ts]) - sn[vn[i].i2].c[ts - 1]) * sts.t_step / sn[vn[i].i2].v[ts];
+                        sn[vn[i].i2].c[ts] += vn[i].qv[ts] * (sn[vn[i].i1].c[ts - 1] * (1 - eta) - sn[vn[i].i2].c[ts - 1]) * sts.t_step / sn[vn[i].i2].v[ts];
                     if(vn[i].qv[ts] < 0 && get<1>(sn[vn[i].i1].flag) == SN_CALC)    
-                        sn[vn[i].i1].c[ts] += vn[i].qv[ts] * (sn[vn[i].i2].c[ts - 1] * (1 - vn[i].eta[ts]) - sn[vn[i].i1].c[ts - 1]) * sts.t_step / sn[vn[i].i1].v[ts];
+                        sn[vn[i].i1].c[ts] += vn[i].qv[ts] * (sn[vn[i].i2].c[ts - 1] * (1 - eta) - sn[vn[i].i1].c[ts - 1]) * sts.t_step / sn[vn[i].i1].v[ts];
                 }
                 for(unsigned int i = 0; i < sn.size(); i++)    LOG_CONTENTS("c" << sn[i].i << ": " << sn[i].c[ts] << "num/L, ");
                 LOG_CONTENTS(endl);
