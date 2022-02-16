@@ -156,39 +156,40 @@ def to_list_i(v):
 ###############################################################################
 # main
 ###############################################################################
-def run_calc(input):                                                                    #はじめに呼び出される関数    
-    if   type(input) == dict: input = to_json(input)                                    #辞書型であれば、JSON形式に変換
-    elif type(input) != str: raise Exception('ERROR: inputは、辞書型かJSON形式である必要がります。')      #文字列（JSON形式)で無ければエラー
+def run_calc(input):                                                                        #はじめに呼び出される関数    
+    if   type(input) == dict:   input = to_json(input)                                      #辞書型であれば、JSON形式に変換
+    elif type(input) != str:    raise Exception('ERROR: inputは、辞書型かJSON形式である必要がります。') #文字列（JSON形式)で無ければエラー
     
-    input = json.loads(input)                                                           #JSON形式を辞書型に変換
-    if 'vn' not in input:   input['vn'] = {}
-    if 'tn' not in input:   input['tn'] = {}
+    input = json.loads(input)                                                               #JSON形式を辞書型に変換
+    if 'vn' not in input:       input['vn'] = {}
+    if 'tn' not in input:       input['tn'] = {}
 
     
-    if 'index' in input:    set_calc_status(input)                                      #計算条件を設定
-    else:                   raise Exception('ERROR: index が存在しません。')             #indexが無ければエラー
+    if 'index' in input:        set_calc_status(input)                                      #計算条件を設定
+    else:                       raise Exception('ERROR: index が存在しません。')             #indexが無ければエラー
     
-    if 'ground' in input:   input = set_ground(input)
-    if 'wall' in input:     input = set_wall(input)
-    if 'glass' in input:    input = set_glass(input)
+    if 'ground' in input:       input = set_ground(input)
+    if 'wall' in input:         input = set_wall(input)
+    if 'glass' in input:        input = set_glass(input)
 
        
-    if 'sn' in input:       input = add_capa(input)                                      #熱容量を設定
-    else:                   raise Exception('ERROR: ノード(sn)が存在しません。')           #sn（ノード）が無ければエラー
+    if 'sn' in input:           input = add_capa(input)                                     #熱容量を設定
+    else:                       raise Exception('ERROR: ノード(sn)が存在しません。')        #sn（ノード）が無ければエラー
 
-    if 'aircon' in input:   input = set_aircon1(input)                                   #エアコンをセット
-    if 'solar' in input:    input = set_solar(input)
-    if 'heater' in input:   input = set_heater(input)
+    if 'aircon' in input:       input = set_aircon1(input)                                  #エアコンをセット
+    if 'solar' in input:        input = set_solar(input)
+    if 'heater' in input:       input = set_heater(input)
 
-    #with open('calc.json', 'w') as f:                                                   #計算入力を　calc.jsonに格納
+    if 'dust source' in input:  input = set_dust_source(input)                              #発塵源のセット
+
+    #with open('calc.json', 'w') as f:                                                      #計算入力を　calc.jsonに格納
     #    json.dump(input, f, ensure_ascii = False, indent = 4)
 
-    if 'sn' in input:       set_sim_node(input['sn'])                                   #sn（ノード）の設定
-    else:                   raise Exception('ERROR: ノード(sn)が存在しません。')          #sn（ノード）が無ければエラー
+    if 'sn' in input:       set_sim_node(input['sn'])                                       #sn（ノード）の設定
+    else:                   raise Exception('ERROR: ノード(sn)が存在しません。')            #sn（ノード）が無ければエラー
 
-    if 'vn' in input:       set_vent_net(input['vn'])                                   #vn（換気回路網）の設定
-    if 'tn' in input:       set_thrm_net(input['tn'])                                   #tn（熱回路網）の設定
-
+    if 'vn' in input:       set_vent_net(input['vn'])                                       #vn（換気回路網）の設定
+    if 'tn' in input:       set_thrm_net(input['tn'])                                       #tn（熱回路網）の設定
     
     if 'aircon' in input:   set_aircon2(input)
 
@@ -369,6 +370,13 @@ def set_aircon2(input):
         for i, nt in enumerate(calc.tn):
             if nt.tn_type == vt.TN_AIRCON:
                 if (calc.node[n3]    == nt.i1) and (calc.node[ac_out] == nt.i2):    calc.tn_aircon_add(i)
+
+def set_dust_source(input):
+    logger.info('Set Dust Source.')
+    for d in input['dust source']:
+        ds = input['dust source'][d]
+        input['sn'][ds['set']] = {ds['m']}
+    return input
 
 def sep_sfx(s, opt = False):
     if s.find(':') != -1:       
