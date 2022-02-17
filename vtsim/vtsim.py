@@ -295,8 +295,8 @@ def set_wall(input):
         input['sn'][n1_os] = {'t_flag': vt.SN_CALC, 'area': area}
 
         if 'capa_w' in wl:
-            input['sn'][n1_is] = dict(input['sn'][n1_is], {'capa': area * wl['capa_w'] / 2})
-            input['sn'][n1_os] = dict(input['sn'][n1_os], {'capa': area * wl['capa_w'] / 2})
+            input['sn'][n1_is] = dict(**input['sn'][n1_is], **{'capa': area * wl['capa_w'] / 2})
+            input['sn'][n1_os] = dict(**input['sn'][n1_os], **{'capa': area * wl['capa_w'] / 2})
 
         input['tn'][n1    + ' -> ' + n1_is] = {'cdtc': area * alpha_1}
         input['tn'][n1_is + ' -> ' + n1_os] = {'cdtc': area * wl['U_w']}
@@ -334,11 +334,6 @@ def set_radiation(input):
     logger.info('Set Radiation.')
     for r in input['room']:
         node = [n for n in input['sn'] if r in n and '_is' in n]
-        
-        print(node)
-        print(input['sn'][node[0]])
-        print(input['sn'][node[1]])
-
         sum_area = sum([input['sn'][n]['area'] for n in node])
         for pair in itertools.combinations(node, 2):
             area0 = input['sn'][pair[0]]['area']
