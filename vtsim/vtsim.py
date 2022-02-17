@@ -256,6 +256,11 @@ def set_room(input):
             for w in rm['wall']:
                 wl = rm['wall'][w]
                 input['wall'][r + '->' + w] = wl
+        if 'glass' in rm:
+            if 'glass' not in input:     input['glass'] = {}
+            for g in rm['glass']:
+                gl = rm['glass'][g]
+                input['glass'][r + '->' + g] = gl
     return input
 
 def set_ground(input):
@@ -265,10 +270,10 @@ def set_ground(input):
         gnd = input['ground'][g]
         n1, n2, n1_is, _ = get_n1n2(g)
 
-        input['sn'][n1_is] = {'t_flag': vt.SN_CALC}
-        input['tn'][n1 +    ' -> ' + n1_is] = {'cdtc':    gnd['area'] / gnd['rg']}
-        input['tn'][n1_is + ' -> ' + n2   ] = {'area':    gnd['area'],  'phi_0':   gnd['phi_0'],
-                                               'cof_r':   gnd['cof_r'], 'cof_phi': gnd['cof_phi']}
+        input['sn'][n1_is] = {'t_flag': vt.SN_CALC, 'area': gnd['area']}
+        input['tn'][n1 +    ' -> ' + n1_is] = {'cdtc':  gnd['area'] / gnd['rg']}
+        input['tn'][n1_is + ' -> ' + n2   ] = {'area':  gnd['area'],  'phi_0':   gnd['phi_0'],
+                                               'cof_r': gnd['cof_r'], 'cof_phi': gnd['cof_phi']}
     return input
 
 def set_wall(input):
@@ -283,8 +288,8 @@ def set_wall(input):
         alpha_1 = wl['alpha_1'] if 'alpha_1' in wl else 9.0
         alpha_2 = wl['alpha_2'] if 'alpha_2' in wl else 25.0
 
-        input['sn'][n1_is] = {'t_flag': vt.SN_CALC}
-        input['sn'][n1_os] = {'t_flag': vt.SN_CALC}
+        input['sn'][n1_is] = {'t_flag': vt.SN_CALC, 'area': area}
+        input['sn'][n1_os] = {'t_flag': vt.SN_CALC, 'area': area}
 
         if 'capa_w' in wl:
             input['sn'][n1_is] = {'capa': area * wl['capa_w'] / 2}
@@ -310,8 +315,8 @@ def set_glass(input):
         alpha_1 = gl['alpha_1'] if 'alpha_1' in gl else 9.0
         alpha_2 = gl['alpha_2'] if 'alpha_2' in gl else 25.0
 
-        input['sn'][n1_is] = {'t_flag': vt.SN_CALC}
-        input['sn'][n1_os] = {'t_flag': vt.SN_CALC}
+        input['sn'][n1_is] = {'t_flag': vt.SN_CALC, 'area': area}
+        input['sn'][n1_os] = {'t_flag': vt.SN_CALC, 'area': area}
 
         input['tn'][n1    + ' -> ' + n1_is] = {'cdtc': area * alpha_1}
         input['tn'][n1_is + ' -> ' + n1_os] = {'cdtc': area * gl['U_w']}
@@ -326,7 +331,12 @@ def set_radiation(input):
     logger.info('Set Radiation.')
     for r in input['room']:
         node = [n for n in input['sn'] if r in n and '_is' in n]
+        sum_area = sum([input['sn']['area'] for n in node])
         for pair in itertools.combinations(node, 2):
+            area0 = input['sn'][pair[0]]['area']
+            area1 = input['sn'][pair[1]]['area']
+            input['tn'][pair[0] + ' -> ' + pair[1]] = {'cdtc': area0 * area1 / sum_area * 4.6}
+
             logger.info(    r + ":" + str(pair[0]) + "->" + str(pair[1]))
 
     return input
