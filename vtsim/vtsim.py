@@ -336,8 +336,8 @@ def set_radiation(input):
         node = [n for n in input['sn'] if r in n and '_is' in n]
         
         print(node)
-        print(input['sn'][node[0]]['area'])
-        print(input['sn'][node[1]]['area'])
+        print(input['sn'][node[0]])
+        print(input['sn'][node[1]])
 
         sum_area = sum([input['sn'][n]['area'] for n in node])
         for pair in itertools.combinations(node, 2):
