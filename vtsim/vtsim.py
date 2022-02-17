@@ -246,10 +246,12 @@ def set_room(input):
     for r in input['room']:
         rm = input['room'][r]
         if 'ground' in rm:
+            if 'ground' not in input:   input['ground'] = {}
             for g in rm['ground']:
                 gnd = rm['ground'][g]
                 input['ground'][r + ' -> ' + g] = gnd
         if 'wall' in rm:
+            if 'wall' not in input:     input['wall'] = {}
             for w in rm['wall']:
                 wl = rm['wall'][w]
                 input['wall'][r + '->' + w] = wl
