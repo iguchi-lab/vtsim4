@@ -324,7 +324,7 @@ def set_glass(input):
 def set_radiation(input):
     logger.info('Set Radiation.')
     for r in input['room']:
-        node = [n for n in input['sn'] if r in n]
+        node = [n for n in input['sn'] if r in n and '_is' in n]
         logger.info(    r + ":" + str(node))
 
     return input
