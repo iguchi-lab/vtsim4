@@ -168,11 +168,12 @@ def run_calc(input):                                                            
     if 'index' in input:        set_calc_status(input)                                      #計算条件を設定
     else:                       raise Exception('ERROR: index が存在しません。')             #indexが無ければエラー
     
+    if 'room'   in input:       input = set_room(input)
     if 'ground' in input:       input = set_ground(input)
-    if 'wall' in input:         input = set_wall(input)
-    if 'glass' in input:        input = set_glass(input)
+    if 'wall'   in input:       input = set_wall(input)
+    if 'glass'  in input:       input = set_glass(input)
+    if 'room'   in input:       input = set_radiation(input)
 
-       
     if 'sn' in input:           input = add_capa(input)                                     #熱容量を設定
     else:                       raise Exception('ERROR: ノード(sn)が存在しません。')        #sn（ノード）が無ければエラー
 
@@ -181,15 +182,14 @@ def run_calc(input):                                                            
     if 'heater' in input:       input = set_heater(input)
 
     if 'dust source' in input:  input = set_dust_source(input)                              #発塵源のセット
+    if 'air cleaner' in input:  input = set_air_cleaner(input)
 
     #with open('calc.json', 'w') as f:                                                      #計算入力を　calc.jsonに格納
     #    json.dump(input, f, ensure_ascii = False, indent = 4)
 
-    if 'sn' in input:       set_sim_node(input['sn'])                                       #sn（ノード）の設定
-    else:                   raise Exception('ERROR: ノード(sn)が存在しません。')            #sn（ノード）が無ければエラー
-
-    if 'vn' in input:       set_vent_net(input['vn'])                                       #vn（換気回路網）の設定
-    if 'tn' in input:       set_thrm_net(input['tn'])                                       #tn（熱回路網）の設定
+    set_sim_node(input['sn'])                                                               #sn（ノード）の設定
+    set_vent_net(input['vn'])                                                               #vn（換気回路網）の設定
+    set_thrm_net(input['tn'])                                                               #tn（熱回路網）の設定
     
     if 'aircon' in input:   set_aircon2(input)
 
@@ -240,6 +240,20 @@ def set_calc_status(input):
     if 'sor_err'   in calc_sts:   sts.sor_err   = calc_sts['sor_err']
 
     calc.setup(sts)
+
+def set_room(input):
+    logger.info('Set Room.')
+    for r in input['room']:
+        rm = input['room'][r]
+        if 'ground' in rm:
+            for g in rm['ground']:
+                gnd = rm['ground'][g]
+                input['ground'][r + ' -> ' + g] = gnd
+        if 'wall' in rm:
+            for w in rm['wall']:
+                wl = rm['wall'][w]
+                input['wall'][r + '->' + w] = wl
+    return input
 
 def set_ground(input):
     logger.info('Set Ground.')
@@ -301,6 +315,14 @@ def set_glass(input):
 
     return input
 
+def set_radiation(input):
+    logger.info('Set Radiation.')
+    for r in input['room']:
+        node = [n for n in input['sn'] if r in n]
+        logger.info(    r + ":" + str(node))
+
+    return input
+
 def add_capa(input):    
     logger.info('Add Capacity.')
     for n in [n for n in input['sn'] if 'capa' in input['sn'][n]]:                              #熱容量の設定のあるノード
@@ -314,7 +336,7 @@ def add_capa(input):
     return input
 
 def set_aircon1(input):
-    logger.info('Set Aircon1.')
+    logger.info('Set Aircon (Pre-processing).')
     for a in input['aircon']:
         ac = input['aircon'][a]
         ac_in, ac_out = a + '_in', a + '_out'
@@ -359,7 +381,7 @@ def set_heater(input):
     return input
 
 def set_aircon2(input):
-    logger.info('Set Aircon2.')
+    logger.info('Set Aircon (Post-processing).')
     for a in input['aircon']:
         ac = input['aircon'][a]
         ac_in, ac_out, n3 = a + '_in', a + '_out', ac['set']
