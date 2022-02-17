@@ -337,8 +337,6 @@ def set_radiation(input):
             area1 = input['sn'][pair[1]]['area']
             input['tn'][pair[0] + ' -> ' + pair[1]] = {'cdtc': area0 * area1 / sum_area * 4.6}
 
-            logger.info(    r + ":" + str(pair[0]) + "->" + str(pair[1]))
-
     return input
 
 def add_capa(input):    
