@@ -260,12 +260,14 @@ def set_room(input):
 def set_ground(input):
     logger.info('Set Ground.')
     for g in input['ground']:
+        
         gnd = input['ground'][g]
-        n1, n2, sfx = get_n1n2(g)
-        input['sn'][n1 + '_G_is' + sfx] = {'t_flag': vt.SN_CALC}
-        input['tn'][n1 +                 ' -> ' + n1 + '_G_is' + sfx] = {'cdtc':    gnd['area'] / gnd['rg']}
-        input['tn'][n1 + '_G_is' + sfx + ' -> ' + n2                ] = {'area':    gnd['area'],  'phi_0':   gnd['phi_0'],
-                                                                         'cof_r':   gnd['cof_r'], 'cof_phi': gnd['cof_phi']}
+        n1, n2, n1_is, _ = get_n1n2(g)
+
+        input['sn'][n1_is] = {'t_flag': vt.SN_CALC}
+        input['tn'][n1 +         ' -> ' + n1_is] = {'cdtc':    gnd['area'] / gnd['rg']}
+        input['tn'][n1 + n1_is + ' -> ' + n2   ] = {'area':    gnd['area'],  'phi_0':   gnd['phi_0'],
+                                                    'cof_r':   gnd['cof_r'], 'cof_phi': gnd['cof_phi']}
     return input
 
 def set_wall(input):
@@ -274,24 +276,25 @@ def set_wall(input):
     for w in input['wall']:
         wl = input['wall'][w]
 
-        n1, n2, sfx = get_n1n2(w)
+        n1, n2, n1_is, n1_os = get_n1n2(w)
+        
         area    = wl['area']
         alpha_1 = wl['alpha_1'] if 'alpha_1' in wl else 9.0
         alpha_2 = wl['alpha_2'] if 'alpha_2' in wl else 25.0
 
-        input['sn'][n1 + '_W_is' + sfx] = {'t_flag': vt.SN_CALC}
-        input['sn'][n1 + '_W_os' + sfx] = {'t_flag': vt.SN_CALC}
+        input['sn'][n1_is] = {'t_flag': vt.SN_CALC}
+        input['sn'][n1_os] = {'t_flag': vt.SN_CALC}
 
         if 'capa_w' in wl:
-            input['sn'][n1 + '_W_is' + sfx] = {'capa': area * wl['capa_w'] / 2}
-            input['sn'][n1 + '_W_os' + sfx] = {'capa': area * wl['capa_w'] / 2}
+            input['sn'][n1_is] = {'capa': area * wl['capa_w'] / 2}
+            input['sn'][n1_os] = {'capa': area * wl['capa_w'] / 2}
 
-        input['tn'][n1 +                 ' -> ' + n1 + '_W_is' + sfx] = {'cdtc': area * alpha_1}
-        input['tn'][n1 + '_W_is' + sfx + ' -> ' + n1 + '_W_os' + sfx] = {'cdtc': area * wl['U_w']}
-        input['tn'][n1 + '_W_os' + sfx + ' -> ' + n2                ] = {'cdtc': area * alpha_2}
+        input['tn'][n1    + ' -> ' + n1_is] = {'cdtc': area * alpha_1}
+        input['tn'][n1_is + ' -> ' + n1_os] = {'cdtc': area * wl['U_w']}
+        input['tn'][n1_os + ' -> ' + n2   ] = {'cdtc': area * alpha_2}
 
         if 'solar' in wl:
-            input['tn'][n1 + '_W_os' + sfx + ' -> ' + wl['solar']] = {'ms': area * wl['eta_w']}
+            input['tn'][n1_os + ' -> ' + wl['solar']] = {'ms': area * wl['eta_w']}
 
     return input
 
@@ -300,17 +303,18 @@ def set_glass(input):
     for g in input['glass']:
         gl = input['glass'][g]
 
-        n1, n2, sfx = get_n1n2(g)
+        n1, n2, n1_is, n1_os = get_n1n2(g)
+
         area    = gl['area']
         alpha_1 = gl['alpha_1'] if 'alpha_1' in gl else 9.0
         alpha_2 = gl['alpha_2'] if 'alpha_2' in gl else 25.0
 
-        input['sn'][n1 + '_G_is' + sfx] = {'t_flag': vt.SN_CALC}
-        input['sn'][n1 + '_G_os' + sfx] = {'t_flag': vt.SN_CALC}
+        input['sn'][n1_is] = {'t_flag': vt.SN_CALC}
+        input['sn'][n1_os] = {'t_flag': vt.SN_CALC}
 
-        input['tn'][n1 +                 ' -> ' + n1 + '_G_is' + sfx] = {'cdtc': area * alpha_1}
-        input['tn'][n1 + '_G_is' + sfx + ' -> ' + n1 + '_G_os' + sfx] = {'cdtc': area * gl['U_w']}
-        input['tn'][n1 + '_G_os' + sfx + ' -> ' + n2                ] = {'cdtc': area * alpha_2}
+        input['tn'][n1    + ' -> ' + n1_is] = {'cdtc': area * alpha_1}
+        input['tn'][n1_is + ' -> ' + n1_os] = {'cdtc': area * gl['U_w']}
+        input['tn'][n1_os + ' -> ' + n2   ] = {'cdtc': area * alpha_2}
 
         if 'solar' in gl:
             input['tn'][n1 + ' -> ' + gl['solar']] = {'ms': area * gl['eta_w']}
@@ -457,7 +461,12 @@ def get_n1n2(nt):
     if s.find('->') == -1:  raise Exception('ERROR: vnもしくはtnのキーに -> が存在しません')
     if s.count('->') >= 2:  raise Exception('ERROR: キーに -> が2回以上出現します')
 
-    return s.split('->')[0], s.split('->')[1], sfx
+    n1 = s.split('->')[0]
+    n2 = s.split('->')[1]
+    n1_is = n1 + '_' + n2 + '_is' + sfx
+    n1_os = n1 + '_' + n2 + '_os' + sfx
+
+    return n1, n2, n1_is, n1_os
 
 def get_network(s):
     o_network = []
@@ -489,7 +498,7 @@ def set_vent_net(vn):
 
             h1 = to_list_f(vn[nt]['h1']) if 'h1' in vn[nt] else to_list_f(0.0)                          #高さ1、行列設定不可
             h2 = to_list_f(vn[nt]['h2']) if 'h2' in vn[nt] else to_list_f(0.0)                          #高さ2、行列設定不可
-            n1, n2, _ = get_n1n2(n1n2)
+            n1, n2, _, _ = get_n1n2(n1n2)
             if n1 not in calc.node: raise Exception('ERROR: ノード(sn)の中に ' + n1 + ' がありません。')
             if n2 not in calc.node: raise Exception('ERROR: ノード(sn)の中に ' + n2 + ' がありません。')
 
@@ -538,7 +547,7 @@ def set_thrm_net(tn):
             else:
                 tn_type = tn[nt]['type']
 
-            n1, n2, _ = get_n1n2(n1n2)
+            n1, n2, _, _ = get_n1n2(n1n2)
             if n1 not in calc.node: raise Exception('ERROR: ノード(sn)の中に ' + n1 + ' がありません。')
             if n2 not in calc.node: raise Exception('ERROR: ノード(sn)の中に ' + n2 + ' がありません。')
 
