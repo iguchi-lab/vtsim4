@@ -331,7 +331,7 @@ def set_radiation(input):
     logger.info('Set Radiation.')
     for r in input['room']:
         node = [n for n in input['sn'] if r in n and '_is' in n]
-        sum_area = sum([input['sn']['area'] for n in node])
+        sum_area = sum([input['sn'][n]['area'] for n in node])
         for pair in itertools.combinations(node, 2):
             area0 = input['sn'][pair[0]]['area']
             area1 = input['sn'][pair[1]]['area']
