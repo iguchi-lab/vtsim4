@@ -289,8 +289,6 @@ def set_wall(input):
         alpha_1 = wl['alpha_1'] if 'alpha_1' in wl else 9.0
         alpha_2 = wl['alpha_2'] if 'alpha_2' in wl else 25.0
 
-        logger.info('    setting area: ' + n1_is)
-        logger.info('    setting area: ' + n1_os)
         input['sn'][n1_is] = {'t_flag': vt.SN_CALC, 'area': area}
         input['sn'][n1_os] = {'t_flag': vt.SN_CALC, 'area': area}
 
