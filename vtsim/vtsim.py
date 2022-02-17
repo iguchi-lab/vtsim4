@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import time
 import json
+import itertools
 
 from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
@@ -325,7 +326,8 @@ def set_radiation(input):
     logger.info('Set Radiation.')
     for r in input['room']:
         node = [n for n in input['sn'] if r in n and '_is' in n]
-        logger.info(    r + ":" + str(node))
+        for pair in itertools.combinations(node, 2):
+            logger.info(    r + ":" + str(pair[0]) + "->" + str(pair[1]))
 
     return input
 
