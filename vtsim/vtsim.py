@@ -522,7 +522,7 @@ def set_sim_node(sn):
             if 'v'           in sn[n]:    calc.sn[i].v     = to_list_f(sn[n]['v'])                    #気積、行列で設定可能
             if 'm'           in sn[n]:    calc.sn[i].m     = to_list_f(sn[n]['m'])                    #発生量、行列で設定可能
             if 'beta'        in sn[n]:    calc.sn[i].beta  = to_list_f(sn[n]['beta'])                 #濃度減少率、行列で設定可能
-            if 's_i'         in sn[n]:    calc.sn[i].s_i   = calc.node[sn[n]['s_i']]
+            if 's_i'         in sn[n]:    calc.sn[i].s_i   = calc.node[sn[nn]['s_i']]
 
             i = i + 1
 
