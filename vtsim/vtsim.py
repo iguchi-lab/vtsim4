@@ -171,8 +171,8 @@ def run_calc(input):                                                            
 
     if 'wind_pressure' in input:    input = set_wind_pressure(input)
     if 'outside_temp'  in input:    input = set_outside_temp(input)
-    if 'solar'         in input:    input = set_solar(input)                                    #日射量をセット
-    if 'nocturnal'     in input:    input = set_nocturnal(input)                                #夜間放射をセット
+    if 'solar'         in input:    input = set_solar(input)                                #日射量をセット
+    if 'nocturnal'     in input:    input = set_nocturnal(input)                            #夜間放射をセット
     if 'isothermal'    in input:    input = set_isothrmal(input)
 
     if 'room'          in input:    input = set_room(input)
