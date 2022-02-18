@@ -1,11 +1,13 @@
 #import library
-from logging import raiseExceptions
 import pandas as pd
 import numpy as np
 import math
 import datetime
 
-#define const
+############################################################################################################################
+#定数
+############################################################################################################################
+
 Air_Cp   = 1.005                                                                        #空気の定圧比熱　   kJ / (m3・K)
 Vap_Cp   = 1.846                                                                        #水蒸気の定圧比熱   KJ / (m3・K)
 Vap_L    = 2501.1                                                                       #水蒸気の蒸発潜熱   KJ / (m3・K)
@@ -46,6 +48,10 @@ ht = lambda t, h: hs(t) + hl(t, h)                                              
 rn = lambda t, h: (94.21 + 39.06 * np.sqrt(e(t, h) / 100) \
                    - 0.85 * Sigma * np.power(T(t), 4)) * 4.187 / 1000                           #夜間放射 MJ/m2
 
+############################################################################################################################
+#日射量
+############################################################################################################################
+
 #直散分離 erbs法
 Kt = lambda IG, alt:     IG / (Wh_to_MJ(Solar_I) * np.sin(np.radians(alt)))                               #晴天指数
 
@@ -58,14 +64,14 @@ def Id(IG, kt):                                                                 
                                                                   - 16.638  * np.power(k, 3) \
                                                                   + 12.336  * np.power(k, 4))
         elif 0.80 < k:                  s_Id[i] = 0.365 * IG[i] 
-    return(s_Id)
+    return s_Id
 
 def Ib(IG, Id, alt):                                                                            #法線面直達日射量
     s_Ib = np.zeros(len(Id))
     for i, id in enumerate(Id):
         s_Ib[i] =  (IG[i] - Id[i]) / np.sin(np.radians(alt[i]))
         if (alt[i] < 1.0) & (s_Ib[i] > 3.5):  s_Ib[i] = 3.5
-    return(s_Ib)
+    return s_Ib
 
 #太陽位置の計算
 delta_d = lambda N: (180 / np.pi) * (0.006322 \
@@ -107,7 +113,7 @@ def sun_loc(idx, lat = 36.00, lon = 140.00, td = -0.5):
     df.loc[(df['sin_AZs'] ==  1) & (df['cos_AZs'] == 0), 'AZs'] = 90
     df.loc[(df['sin_AZs'] == -1) & (df['cos_AZs'] == 0), 'AZs'] = -90                                                   #太陽方位角　°
 
-    return(df)
+    return df
 
 def astro_sun_loc(idx, lat = '36 00 00.00', lon = '140 00 00.00', td = -0.5):
     import astropy.time
@@ -133,7 +139,7 @@ def astro_sun_loc(idx, lat = '36 00 00.00', lon = '140 00 00.00', td = -0.5):
     df.loc[(df['s_az'] > 0) & (df['c_az'] < 0), 'az'] = np.degrees(np.arctan(df['s_az'] / df['c_az']))
     df.loc[(df['s_az'] < 0) & (df['c_az'] < 0), 'az'] = np.degrees(np.arctan(df['s_az'] / df['c_az']))
 
-    return(df)
+    return df
 
 def sep_direct_diffuse(s_ig, s_hs):
     df_i = pd.concat([s_ig, s_hs], axis = 1)
@@ -142,7 +148,7 @@ def sep_direct_diffuse(s_ig, s_hs):
     df_i['Kt'] = Kt(Wh_to_MJ(df_i['IG']), df_i['hs'])
     df_i['Id'] = MJ_to_Wh(Id(Wh_to_MJ(df_i['IG']), df_i['Kt']))
     df_i['Ib'] = MJ_to_Wh(Ib(Wh_to_MJ(df_i['IG']), Wh_to_MJ(df_i['Id']), df_i['hs']))   
-    return(df_i[['Kt', 'Id', 'Ib']])
+    return df_i[['Kt', 'Id', 'Ib']]
 
 def direc_solar(s_ib, s_id, s_sin_hs, s_cos_hs, s_hs, s_sin_AZs, s_cos_AZs, s_AZs):
     df_i = pd.concat([s_ib, s_id, s_sin_hs, s_cos_hs, s_hs, s_sin_AZs, s_cos_AZs, s_AZs], axis = 1)
@@ -182,7 +188,7 @@ def direc_solar(s_ib, s_id, s_sin_hs, s_cos_hs, s_hs, s_sin_AZs, s_cos_AZs, s_AZ
     df_i['Ins_W_H'] = df_i['Ib_H']   + df_i['Id_D']   + df_i['Id_R']
     df_i['Ins_G_H'] = df_i['Ib_H_g'] + df_i['Id_D_g'] + df_i['Id_R_g']
 
-    return(df_i.fillna(0))
+    return df_i.fillna(0)
 
 def make_sokar(**kwargs):
     lat = kwargs['lat'] if 'lat' in kwargs else 36.00
@@ -216,9 +222,11 @@ def make_sokar(**kwargs):
         '日射_ガラス_H':    df_i['Ins_G_H']
     }
 
-    return(df_i, solar)
+    return df_i, solar
 
+############################################################################################################################
 #calc PMV PPD
+############################################################################################################################
 calc_R  = lambda f_cl, t_cl, t_r:               3.96e-8 * f_cl * (math.pow(t_cl + 273, 4) - math.pow(t_r + 273, 4))
 calc_C  = lambda f_cl, h_c, t_cl, t_a:          f_cl * h_c * (t_cl - t_a)
 calc_RC = lambda f_cl, h_c, t_cl, t_a, t_r:     calc_R(f_cl, t_cl, t_r) + calc_C(f_cl, h_c, t_cl, t_a)
@@ -242,9 +250,9 @@ def calc_PMV(Met = 1.0, W = 0.0, Clo = 1.0, t_a = 20, h_a = 50, t_r = 20, v_a = 
     L    = (M - W) - E_d - E_s - E_re - C_re - calc_RC(f_cl, h_c, t_cl, t_a, t_r)
     PMV  = (0.303 * math.exp(-0.036 * M) + 0.028) * L
 
-    return(PMV)
+    return PMV
 
 def calc_PPD(Met = 1.0, W = 0.0, Clo = 1.0, t_a = 20, h_a = 50, t_r = 20, v_a = 0.2):
     PMV = calc_PMV(Met, W, Clo, t_a, h_a, t_r, v_a)
     PPD = 100 - 95 * math.exp(-0.03353 * math.pow(PMV, 4) - 0.2179 * math.pow(PMV, 2))
-    return(PPD)
+    return PPD
