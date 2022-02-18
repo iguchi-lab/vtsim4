@@ -275,6 +275,19 @@ def set_outside_temp(input):
 
     return input
 
+def set_isothrmal(input):
+    logger.info('Set Isothermal')
+    name = ['地盤']
+
+    for i in input['isothermal']:
+        it = input['isothermal'][i]
+        for nn in name:
+            if nn in i:
+                if nn in input['sn']:   input['sn'][nn] = {}
+                input['sn'][nn] = {'t_flag': SN_FIX,  't': it}
+    
+    return input
+
 def set_solar(input):
     logger.info('Set Solar.')
     name = ['日射_全天_H', '日射_壁_E', '日射_壁_S', '日射_壁_W', '日射_壁_N', '日射_壁_H',
@@ -296,10 +309,7 @@ def set_nocturnal(input):
             if nn in nr: input['sn'][nn] = {'insolation': nr}
     return input
 
-def set_isothrmal(input):
-    logger.info('Set Isothermal')
-    input['sn']['地盤'] = {'t_flag': vt.SN_FIX,  't': input['isothermal']['t']}
-    return input
+
 
 def set_room(input):
     logger.info('Set Room.')
