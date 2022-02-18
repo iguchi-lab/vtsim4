@@ -119,13 +119,13 @@ def read_hasp(fn):
             str_dat[i] += dat[d * 7 + i][:72]
 
     for c in range(7):
-        df[clm[c]] = [int(str_dat[c][i * 3:i * 3 + 3]) for i in range(24 * 365)]
+        df[clm[c]] = [int(str_dat[c][i * 3 : i * 3 + 3]) for i in range(24 * 365)]
 
     df['t_ex'] = (df['t_ex'] - 500) / 10  #気温             Exteria Temperature       ℃
-    df['h_ex'] = df['h_ex'] / 10          #重量絶対湿度     Exteria Humidity          g/kg'
-    df['i_b']  = df['i_b'] * 1.16222      #法線面直達日射   Direct Solar Insolation   kcal/(m2・h) -> W/m2 
-    df['i_d']  = df['i_d'] * 1.16222      #水平面拡散日射量 Diffuse Solar Insolation  kcal/(m2・h) -> W/m2
-    df['n_r']  = df['n_r'] * 1.16222      #夜間放射         Nocturnal Radiation       kcal/(m2・h) -> W/m2
+    df['h_ex'] =  df['h_ex'] / 10         #重量絶対湿度     Exteria Humidity          g/kg'
+    df['i_b']  =  df['i_b'] * 1.16222     #法線面直達日射   Direct Solar Insolation   kcal/(m2・h) -> W/m2 
+    df['i_d']  =  df['i_d'] * 1.16222     #水平面拡散日射量 Diffuse Solar Insolation  kcal/(m2・h) -> W/m2
+    df['n_r']  =  df['n_r'] * 1.16222     #夜間放射         Nocturnal Radiation       kcal/(m2・h) -> W/m2
     df['w_d'].astype(int)                 #風向             Wind Direction
                                           #0:無風,  1:NNE,  2:NE,   3:ENE, 4:E,    5:ESE,  6:SE,   7:SSE,  8:S
                                           #9:SSW,  10:SW,  11:WSW, 12:W,  13:WNW, 14:NW,  15:NNW, 16:N
