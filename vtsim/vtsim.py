@@ -169,14 +169,17 @@ def run_calc(input):                                                            
     if 'index' in input:        set_calc_status(input)                                      #計算条件を設定
     else:                       raise Exception('ERROR: index が存在しません。')             #indexが無ければエラー
 
-    if 'solar' in input:        input = set_solar(input)                                    #日射量をセット
-    if 'nocturnal' in input:    input = set_nocturnal(input)                                #夜間放射をセット
+    if 'wind_pressure' in input:    input = set_wind_pressure(input)
+    if 'outside_temp'  in input:    input = set_outside_temp(input)
+    if 'solar'         in input:    input = set_solar(input)                                    #日射量をセット
+    if 'nocturnal'     in input:    input = set_nocturnal(input)                                #夜間放射をセット
+    if 'isothermal'    in input:    input = set_isothrmal(input)
 
-    if 'room'   in input:       input = set_room(input)
-    if 'ground' in input:       input = set_ground(input)
-    if 'wall'   in input:       input = set_wall(input)
-    if 'glass'  in input:       input = set_glass(input)
-    if 'room'   in input:       input = set_radiation(input)
+    if 'room'          in input:    input = set_room(input)
+    if 'ground'        in input:    input = set_ground(input)
+    if 'wall'          in input:    input = set_wall(input)
+    if 'glass'         in input:    input = set_glass(input)
+    if 'room'          in input:    input = set_radiation(input)
 
     if 'sn' in input:           input = add_capa(input)                                     #熱容量を設定
     else:                       raise Exception('ERROR: ノード(sn)が存在しません。')        #sn（ノード）が無ければエラー
@@ -213,7 +216,7 @@ def run_calc(input):                                                            
     logger.info('******* start vtsim c++ calc *******')
     logger.info('Start vtsim calc.')
     s_time = time.time()
-    calc.calc()                                                                         #計算
+    calc.calc()                                                                     #計算
     e_time = time.time() - s_time    
     logger.info("Finish vtsim calc. calc time = {0}".format(e_time * 1000) + "[ms]")
 
@@ -243,6 +246,61 @@ def set_calc_status(input):
     if 'sor_err'   in calc_sts:   sts.sor_err   = calc_sts['sor_err']
 
     calc.setup(sts)
+
+def set_wind_pressure(input):
+    logger.info('Set Wind Pressure.')
+    name = ['風圧_E', '風圧_S', '風圧_W', '風圧_N', '風圧_H']
+
+    for w in input['wind_pressure']:
+        wp = input['wind_pressure']
+        for nn in name:
+            if nn in w: 
+                nnn = nn.replace('風圧', '外部')
+                if nnn in input['sn']:  input['sn'][nnn] = {}
+                input['sn'][nnn]['v_flag'] = SN_FIX
+                input['sn'][nnn]['p']      =  wp
+
+    return input
+
+def set_outside_temp(input):
+    logger.info('Set Outside Temp.')
+    name = ['外部_E', '外部_S', '外部_W', '外部_N', '外部_H']
+
+    for t in input['outside_temp']:
+        tp = input['outside_temp']
+        for nn in name:
+            if nn in t: 
+                if nn in input['sn']:   input['sn'][nn] = {}
+                input['sn'][nn]['t_flag'] = SN_FIX
+                input['sn'][nn]['t']      = tp['t']
+
+    return input
+
+def set_solar(input):
+    logger.info('Set Solar.')
+    name = ['日射_全天_H', '日射_壁_E', '日射_壁_S', '日射_壁_W', '日射_壁_N', '日射_壁_H',
+                          '日射_ガラス_E', '日射_ガラス_S', '日射_ガラス_W', '日射_ガラス_N', '日射_ガラス_H'] 
+    
+    for s in input['solar']:
+        sl = input['solar'][s]
+        for nn in name:
+            if nn in s: input['sn'][nn] = {'insolation': sl}
+
+    return input
+
+def set_nocturnal(input):
+    logger.info('Set Nocturnal Radiation.')
+    name = ['夜間_H', '夜間_V']
+    for n in input['nocturnal']:
+        nr = input['nocturnal'][n]
+        for nn in name:
+            if nn in nr: input['sn'][nn] = {'insolation': nr}
+    return input
+
+def set_isothrmal(input):
+    logger.info('Set Isothermal')
+    input['sn']['地盤'] = {'t_flag': vt.SN_FIX,  't': input['isothermal']['t']}
+    return input
 
 def set_room(input):
     logger.info('Set Room.')
@@ -295,8 +353,8 @@ def set_wall(input):
         input['sn'][n1_os] = {'t_flag': vt.SN_CALC, 'area': area}
 
         if 'capa_w' in wl:
-            input['sn'][n1_is] = dict(**input['sn'][n1_is], **{'capa': area * wl['capa_w'] / 2})
-            input['sn'][n1_os] = dict(**input['sn'][n1_os], **{'capa': area * wl['capa_w'] / 2})
+            input['sn'][n1_is]['capa'] =  area * wl['capa_w'] / 2
+            input['sn'][n1_os]['capa'] =  area * wl['capa_w'] / 2
 
         input['tn'][n1    + ' -> ' + n1_is] = {'cdtc': area * alpha_1}
         input['tn'][n1_is + ' -> ' + n1_os] = {'cdtc': area * wl['U_w']}
@@ -304,6 +362,9 @@ def set_wall(input):
 
         if 'solar' in wl:
             input['tn'][n1_os + ' -> ' + wl['solar']] = {'ms': area * wl['eta_w']}
+
+        if 'nocturnal' in wl:
+            input['tn'][n1_os + ' -> ' + wl['nocturnal']] = {'ms': area * wl['epsilon_w']}
 
     return input
 
@@ -327,6 +388,9 @@ def set_glass(input):
 
         if 'solar' in gl:
             input['tn'][n1 + ' -> ' + gl['solar']] = {'ms': area * gl['eta_w']}
+
+        if 'nocturnal' in gl:
+            input['tn'][n1_os + ' -> ' + gl['nocturnal']] = {'ms': area * gl['epsilon_w']}
 
     return input
 
@@ -377,27 +441,6 @@ def set_aircon1(input):
         input['tn'][n3  + ' -> ' + ac_out] = {'ac_mode': ac['ac_mode'], 'pre_tmp': ac['pre_tmp']}
     
     return input
-
-def set_solar(input):
-    logger.info('Set Solar.')
-    name = ['日射_全天_H', '日射_壁_E', '日射_壁_S', '日射_壁_W', '日射_壁_N', '日射_壁_H',
-                          '日射_ガラス_E', '日射_ガラス_S', '日射_ガラス_W', '日射_ガラス_N', '日射_ガラス_H'] 
-    
-    for s in input['solar']:
-        sl = input['solar'][s]
-        for nn in name:
-            if nn in s: input['sn'][nn] = {'insolation': sl}
-
-    return input
-
-def set_nocturnal(input):
-    logger.info('Set Nocturnal Radiation.')
-    name = ['夜間_H', '夜間_V']
-    for n in input['nocturnal']:
-        nr = input['nocturnal'][n]
-        for nn in name:
-            if nn in nr: input['sn'][nn] = {'insolation': nr}
-
 
 def set_heater(input):
     logger.info('Set Heater.')
