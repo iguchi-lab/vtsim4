@@ -264,15 +264,14 @@ def set_wind_pressure(input):
 
 def set_outside_temp(input):
     logger.info('Set Outside Temp.')
-    name = ['外部_E', '外部_S', '外部_W', '外部_N', '外部_H']
+    name = ['外部', '外部_E', '外部_S', '外部_W', '外部_N', '外部_H']
 
     for t in input['outside_temp']:
-        tp = input['outside_temp']
+        tp = input['outside_temp'][t]
         for nn in name:
             if nn in t: 
                 if nn in input['sn']:   input['sn'][nn] = {}
-                input['sn'][nn]['t_flag'] = SN_FIX
-                input['sn'][nn]['t']      = tp['t']
+                input['sn'][nn] = {'t_flag': SN_FIX, 't': tp}
 
     return input
 
