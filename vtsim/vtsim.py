@@ -168,7 +168,10 @@ def run_calc(input):                                                            
     
     if 'index' in input:        set_calc_status(input)                                      #計算条件を設定
     else:                       raise Exception('ERROR: index が存在しません。')             #indexが無ければエラー
-    
+
+    if 'solar' in input:        input = set_solar(input)                                    #日射量をセット
+    if 'nocturnal' in input:    input = set_nocturnal(input)                                #夜間放射をセット
+
     if 'room'   in input:       input = set_room(input)
     if 'ground' in input:       input = set_ground(input)
     if 'wall'   in input:       input = set_wall(input)
@@ -179,11 +182,10 @@ def run_calc(input):                                                            
     else:                       raise Exception('ERROR: ノード(sn)が存在しません。')        #sn（ノード）が無ければエラー
 
     if 'aircon' in input:       input = set_aircon1(input)                                  #エアコンをセット
-    if 'solar' in input:        input = set_solar(input)
-    if 'heater' in input:       input = set_heater(input)
+    if 'heater' in input:       input = set_heater(input)                                   #ヒーターをセット
 
     if 'dust source' in input:  input = set_dust_source(input)                              #発塵源のセット
-    if 'air cleaner' in input:  input = set_air_cleaner(input)
+    if 'air cleaner' in input:  input = set_air_cleaner(input)                              #空気清浄機のセット
 
     #with open('calc.json', 'w') as f:                                                      #計算入力を　calc.jsonに格納
     #    json.dump(input, f, ensure_ascii = False, indent = 4)
@@ -378,15 +380,24 @@ def set_aircon1(input):
 
 def set_solar(input):
     logger.info('Set Solar.')
-    name = ['Ins_T_H', 'Ins_W_E', 'Ins_W_S', 'Ins_W_W', 'Ins_W_N', 'Ins_W_H',
-                       'Ins_G_E', 'Ins_G_S', 'Ins_G_W', 'Ins_G_N', 'Ins_G_H'] 
+    name = ['日射_全天_H', '日射_壁_E', '日射_壁_S', '日射_壁_W', '日射_壁_N', '日射_壁_H',
+                          '日射_ガラス_E', '日射_ガラス_S', '日射_ガラス_W', '日射_ガラス_N', '日射_ガラス_H'] 
     
     for s in input['solar']:
         sl = input['solar'][s]
-        for n in name:
-            if n in s: input['sn'][n] = {'insolation': sl}
+        for nn in name:
+            if nn in s: input['sn'][nn] = {'insolation': sl}
 
     return input
+
+def set_nocturnal(input):
+    logger.info('Set Nocturnal Radiation.')
+    name = ['夜間_H', '夜間_V']
+    for n in input['nocturnal']:
+        nr = input['nocturnal'][n]
+        for nn in name:
+            if nn in nr: input['sn'][nn] = {'insolation': nr}
+
 
 def set_heater(input):
     logger.info('Set Heater.')
