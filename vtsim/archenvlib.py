@@ -1,4 +1,5 @@
 #import library
+from logging import raiseExceptions
 import pandas as pd
 import numpy as np
 import math
@@ -183,43 +184,36 @@ def direc_solar(s_ib, s_id, s_sin_hs, s_cos_hs, s_hs, s_sin_AZs, s_cos_AZs, s_AZ
 
     return(df_i.fillna(0))
 
-def make_solar1(s_ig):
-    df_i = pd.concat([s_ig, sun_loc(s_ig.index, lat = 36.00, lon = 140.00, td = -0.5)], axis = 1)                                                 #太陽位置の追加
-    df_i = pd.concat([df_i, sep_direct_diffuse(s_ig, df_i['hs'])], axis = 1)                                #直散分離結果の追加
-    df_i = direc_solar(df_i['Ib'], df_i['Id'],                                                              #方位別日射量の追加
-                       df_i['sin_hs'], df_i['cos_hs'], df_i['hs'], 
-                       df_i['sin_AZs'], df_i['cos_AZs'], df_i['AZs'])
-    solar =     {
-        'Ins_W_E': df_i['Ins_W_E'],
-        'Ins_G_E': df_i['Ins_G_E'],
-        'Ins_W_S': df_i['Ins_W_S'],
-        'Ins_G_S': df_i['Ins_G_S'],
-        'Ins_W_W': df_i['Ins_W_W'],
-        'Ins_G_W': df_i['Ins_G_W'],
-        'Ins_W_N': df_i['Ins_W_N'],
-        'Ins_G_N': df_i['Ins_G_N'],
-        'Ins_W_H': df_i['Ins_W_H'],
-        'Ins_G_H': df_i['Ins_G_H']
-    }
-    
-    return(df_i, solar)
+def make_sokar(**kwargs):
+    lat = kwargs['lat'] if 'lat' in kwargs else 36.00
+    lon = kwargs['lon'] if 'lon' in kwargs else 140.00
+    td  = kwargs['td']  if 'td'  in kwargs else -0.5
 
-def make_solar2(s_ib, s_id):
-    df_i = pd.concat([s_ib, s_id, sun_loc(s_ib.index, lat = 36.00, lon = 140.00, td = -0.5)], axis = 1)                                           #太陽位置の追加
+    if 's_ig' in kwargs:    
+        s_ig = kwargs['s_ig']
+        df_i = pd.concat([s_ig, sun_loc(s_ig.index, lat = lat, lon = lon, td = td)], axis = 1)
+        df_i = pd.concat([df_i, sep_direct_diffuse(s_ig, df_i['hs'])], axis = 1)                                #直散分離結果の追加  
+    else:
+        if 's_ib' in kwargs:    s_ib = kwargs['s_ib']
+        else:                   raise Exception('ERROR: 水平面拡散日射量 s_ig がありません。法線面直達日射量 s_ib もありません。')
+        if 's_id' in kwargs:    s_id = kwargs['s_id']
+        else:                   raise Exception('ERROR: 水平面拡散日射量 s_ig がありません。全天日射量 s_id もありません。')
+        df_i = pd.concat([s_ib, s_id, sun_loc(s_ib.index, lat = lat, lon = lon, td = td)], axis = 1)  
+
     df_i = direc_solar(df_i['Ib'], df_i['Id'],                                                              #方位別日射量の追加
-                       df_i['sin_hs'], df_i['cos_hs'], df_i['hs'], 
-                       df_i['sin_AZs'], df_i['cos_AZs'], df_i['AZs'])
+                       df_i['sin_hs'], df_i['cos_hs'], df_i['hs'], df_i['sin_AZs'], df_i['cos_AZs'], df_i['AZs'])
+
     solar =     {
-        'Ins_W_E': df_i['Ins_W_E'],
-        'Ins_G_E': df_i['Ins_G_E'],
-        'Ins_W_S': df_i['Ins_W_S'],
-        'Ins_G_S': df_i['Ins_G_S'],
-        'Ins_W_W': df_i['Ins_W_W'],
-        'Ins_G_W': df_i['Ins_G_W'],
-        'Ins_W_N': df_i['Ins_W_N'],
-        'Ins_G_N': df_i['Ins_G_N'],
-        'Ins_W_H': df_i['Ins_W_H'],
-        'Ins_G_H': df_i['Ins_G_H']
+        '日射_壁_E':        df_i['Ins_W_E'],
+        '日射_ガラス_E':    df_i['Ins_G_E'],
+        '日射_壁_S':        df_i['Ins_W_S'],
+        '日射_ガラス_S':    df_i['Ins_G_S'],
+        '日射_壁_W':        df_i['Ins_W_W'],
+        '日射_ガラス_W':    df_i['Ins_G_W'],
+        '日射_壁_N':        df_i['Ins_W_N'],
+        '日射_ガラス_N':    df_i['Ins_G_N'],
+        '日射_壁_H':        df_i['Ins_W_H'],
+        '日射_ガラス_H':    df_i['Ins_G_H']
     }
 
     return(df_i, solar)
