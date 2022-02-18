@@ -187,8 +187,8 @@ def run_calc(input):                                                            
     if 'aircon' in input:       input = set_aircon1(input)                                  #エアコンをセット
     if 'heater' in input:       input = set_heater(input)                                   #ヒーターをセット
 
-    if 'dust source' in input:  input = set_dust_source(input)                              #発塵源のセット
-    if 'air cleaner' in input:  input = set_air_cleaner(input)                              #空気清浄機のセット
+    if 'dust_source' in input:  input = set_dust_source(input)                              #発塵源のセット
+    if 'air_cleaner' in input:  input = set_air_cleaner(input)                              #空気清浄機のセット
 
     #with open('calc.json', 'w') as f:                                                      #計算入力を　calc.jsonに格納
     #    json.dump(input, f, ensure_ascii = False, indent = 4)
@@ -378,7 +378,7 @@ def set_wall(input):
     return input
 
 def set_glass(input):
-    logger.info('set_glass')
+    logger.info('Set Glass')
     for g in input['glass']:
         gl = input['glass'][g]
 
@@ -475,14 +475,14 @@ def set_aircon2(input):
 
 def set_dust_source(input):
     logger.info('Set Dust Source.')
-    for d in input['dust source']:
-        ds = input['dust source'][d]
+    for d in input['dust_source']:
+        ds = input['dust_source'][d]
         input['sn'][ds['set']]['m'] = ds['m']
     return input
 
 def set_air_cleaner(input):
     logger.info('Set Air Cleaner.')
-    for a in input['air cleaner']:
+    for a in input['air_cleaner']:
         ac = input['air_cleaner'][a]
         input['vn'][ac['set']]['eta'] = ac['eta']
     return input
