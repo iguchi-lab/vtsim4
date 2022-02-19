@@ -214,11 +214,10 @@ def run_calc(input):                                                            
     logger.info('i_tn_ac ' + str(calc.i_tn_ac))
 
     logger.info('******* start vtsim c++ calc *******')
-    logger.info('Start vtsim calc.')
     s_time = time.time()
     calc.calc()                                                                     #計算
     e_time = time.time() - s_time    
-    logger.info("Finish vtsim calc. calc time = {0}".format(e_time * 1000) + "[ms]")
+    logger.info("calc time = {0}".format(e_time * 1000) + "[ms]")
 
     dat_list = make_df(calc.result(), pd.to_datetime(input['index'], format='%Y/%m/%d %H:%M:%S'))
     opt = input['opt'] if 'opt' in input else OPT_GRAPH
@@ -308,8 +307,6 @@ def set_nocturnal(input):
         for nn in name:
             if nn in nr: input['sn'][nn] = {'insolation': nr}
     return input
-
-
 
 def set_room(input):
     logger.info('Set Room.')
