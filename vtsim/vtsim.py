@@ -350,7 +350,9 @@ def set_wall(input):
         wl = input['wall'][w]
 
         n1, n2, n1_is, n1_os = get_n1n2(w)
-        
+        n1_is = n1_is + '_w'
+        n1_os = n1_os + '_w'
+
         area    = wl['area']
         alpha_1 = wl['alpha_1'] if 'alpha_1' in wl else 9.0
         alpha_2 = wl['alpha_2'] if 'alpha_2' in wl else 25.0
@@ -380,6 +382,8 @@ def set_glass(input):
         gl = input['glass'][g]
 
         n1, n2, n1_is, n1_os = get_n1n2(g)
+        n1_is = n1_is + '_g'
+        n1_os = n1_os + '_g'
 
         area    = gl['area']
         alpha_1 = gl['alpha_1'] if 'alpha_1' in gl else 9.0
