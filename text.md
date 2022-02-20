@@ -54,7 +54,8 @@ import pandas as pd
   地盤の応答係数
 - material
 
-　建築材料と壁面構成
+  建築材料と壁面構成
+  
 ---
 ## 4.vtsimでできること
 
