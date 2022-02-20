@@ -23,6 +23,7 @@ from vtsim import vtsim as vt
   あわせて下記も実行しておくことを便利である。
 
   ※matplotlibは、グラフをの描画に必要。japanize-matplotlibで、日本語にも対応できる。
+
   ※numpyとpandasは、行列などを扱う際に必要。
 
 ```
@@ -62,4 +63,6 @@ import pandas as pd
 - 換気回路網計算による、多数室、部位間の空気の移動
 - 熱回路網計算による、多数室、部位間の温度や熱流
 - 空気と共に移動する物質の室内濃度
+
+![ノードとネットワークの設定例](sample01.png)
 
