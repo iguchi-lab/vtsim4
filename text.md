@@ -74,7 +74,7 @@ import pandas as pd
 
 #### 1. ノードとネットワークの読み込みと、タイムステップの設定
 
-    ※vtsimでは、JSON方式もしくは、pythonの辞書（dict）方式でデータを読み込みます。
+    ※vtsimでは、JSON方式もしくは、pythonの辞書型（dict）でデータを読み込みます。
 
 #### 2. 換気回路網計算で各節点の圧力を計算する
 
@@ -108,3 +108,11 @@ import pandas as pd
 
 ---
 ## 7. 入力方法 
+
+vtsimでは、JSON方式もしくは、pythonの辞書型（dict）でデータを読み込みます。
+
+以下のように記述します。
+```
+input = {'AAA': vvv,
+         'BBB': [A, b, c, d]}...
+```
