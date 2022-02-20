@@ -111,7 +111,8 @@ import pandas as pd
 
 vtsimでは、JSON方式もしくは、pythonの辞書型（dict）でデータを読み込みます。
 
-以下のように記述します。
+JSON方式もしくは、pythonの辞書型（dict）は、中括弧[{}]を使って記述され、引用符[']で囲まれた、キー(key)と、[:]の後に続く値(value)で記述されます。
+
 ```
 input = {'AAA': vvv,
          'BBB': [A, b, c, d]}...
