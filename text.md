@@ -3,12 +3,12 @@
 ---
 ## 1.はじめに
 
-  vtsimは、建築環境工学・建築設備を学ぶ大学生、研究者向けに開発された温熱計算プログラムで下記の特徴がある。
+  vtsimは、建築環境工学・建築設備を学ぶ大学生、研究者向けに開発された温熱計算プログラムで、下記の特徴がある。
 
 *   ブラウザ上（Google Clab）で動作する。環境設定が不要。
 *   自由度の高いプログラム言語pythonで記述。
-*   速度が求められる計算部分はc++で記述。
-*   ユーザーは、プログラム言語pythonに加え、pandas、numpyなどの知識が必要。
+*   計算 速度が求められる計算部分はc++で記述。
+*   ユーザーは、プログラム言語pythonに加え、pythonのライブラリpandasなどの知識が必要。
 *   熱・換気回路網による計算をベースとし、節点（ノード）と回路網（ネットワーク）、各種条件の設定で動作。
 
 ---
@@ -17,13 +17,12 @@
   Google Colabで下記のコードを実行して、インストールする。
 
 ```
-!pip install git+https://github.com/iguchi-lab/vtsim3
+!pip install git+https://github.com/iguchi-lab/vtsim4
 from vtsim import vtsim as vt
 ```
   あわせて下記も実行しておくことを便利である。
 
   ※matplotlibは、グラフをの描画に必要。japanize-matplotlibで、日本語にも対応できる。
-
   ※numpyとpandasは、行列などを扱う際に必要。
 
 ```
@@ -52,7 +51,9 @@ import pandas as pd
 - cof_ground
 
   地盤の応答係数
+- material
 
+　建築材料と壁面構成
 ---
 ## 4.vtsimでできること
 
@@ -62,4 +63,3 @@ import pandas as pd
 - 熱回路網計算による、多数室、部位間の温度や熱流
 - 空気と共に移動する物質の室内濃度
 
-![ノードとネットワークの設定例](sample01.png)
