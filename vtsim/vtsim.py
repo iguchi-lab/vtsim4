@@ -219,6 +219,7 @@ def run_calc(input):                                                            
     e_time = time.time() - s_time    
     logger.info("calc time = {0}".format(e_time * 1000) + "[ms]")
 
+    logger.info('******* output vtsim c++ calc *******')
     dat_list = make_df(calc.result(), pd.to_datetime(input['index'], format='%Y/%m/%d %H:%M:%S'))
     opt = input['opt'] if 'opt' in input else OPT_GRAPH
 
