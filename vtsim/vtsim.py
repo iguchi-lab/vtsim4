@@ -453,15 +453,6 @@ def set_aircon1(input):
     
     return input
 
-def set_heater(input):
-    logger.info('Set Heater.')
-    for h in input['heater']:
-        ht = input['heater'][h]
-        input['sn'][h] = {'h_input': ht['output']}
-        input['tn'][ht['set'] + ' -> ' + h] = {}
-
-    return input
-
 def set_aircon2(input):
     logger.info('Set Aircon (Post-processing).')
     for a in input['aircon']:
@@ -474,6 +465,15 @@ def set_aircon2(input):
         for i, nt in enumerate(calc.tn):
             if nt.tn_type == vt.TN_AIRCON:
                 if (calc.node[n3]    == nt.i1) and (calc.node[ac_out] == nt.i2):    calc.tn_aircon_add(i)
+
+def set_heater(input):
+    logger.info('Set Heater.')
+    for h in input['heater']:
+        ht = input['heater'][h]
+        input['sn'][h] = {'h_input': ht['output']}
+        input['tn'][ht['set'] + ' -> ' + h] = {}
+
+    return input
 
 def set_dust_source(input):
     logger.info('Set Dust Source.')
