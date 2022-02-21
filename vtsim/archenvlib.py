@@ -124,7 +124,7 @@ def Ib(IG, Id, alt):                                                            
     s_Ib = np.zeros(len(Id))
     for i, id in enumerate(Id):
         s_Ib[i] =  (IG[i] - Id[i]) / np.sin(np.radians(alt[i]))
-        if (alt[i] < 5.0) & (s_Ib[i] > 5):  s_Ib[i] = 5
+        if (np.radians(alt[i]) < 5.0) & (s_Ib[i] > 1):  s_Ib[i] = 1
     return s_Ib
 
 #太陽位置の計算
