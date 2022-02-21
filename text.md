@@ -505,7 +505,7 @@ air_cleanerの名称をキーとした以下の設定により、空気清浄機
 
 # 15. チュートリアル
 
-インストール（使いそうなライブラリも含む）
+### インストール（使いそうなライブラリも含む）
 ```
 !pip install git+https://github.com/iguchi-lab/vtsim4
 from vtsim import vtsim as vt
@@ -518,7 +518,7 @@ import numpy as np
 import pandas as pd
 ```
 
-２室の温度に関する計算例
+### ２室の温度に関する計算例
 ```
 input = {
     'index': vt.index('1s', 1),
@@ -551,9 +551,8 @@ input = {
 vt.run_calc(input)
 ```
 
-粉塵に関する計算例
+### 粉塵に関する計算例
 ```
-
 df_i = pd.DataFrame(index = vt.index('10s', 7200))
 df_i['m'] = 0
 df_i['k'] = 0
