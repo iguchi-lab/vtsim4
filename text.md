@@ -360,7 +360,7 @@ input = {
 水平面（夜間_H）、鉛直面（夜間_V）の夜間放射節点を作成し、lib.make_nocturalによって生成される夜間放射量を設定します。夜間放射量は、気象データの温湿度から計算することが可能です。夜間放射量の計算法は、lib.make_nocturalの説明を参照してください。
 
 ```
-df, solar = lib.make_nocturnal(t = t, h = h)
+df, noctural = lib.make_nocturnal(t = t, h = h)
 
 input = {
   'noctural': noctural
