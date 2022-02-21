@@ -367,7 +367,7 @@ input = {
 }
 ```
 
-# 12. 壁、ガラス、室内の設定
+# 13. 壁、ガラス、室内の設定
 
 ### wall
 
@@ -420,7 +420,7 @@ wallとglassの設定以外にroomを設定する方法があります。roomを
 |glass|ガラス面設定に必要な項目|glassと同様|なし|
 |ground|地盤面設定に必要な項目|groundと同様|なし|
 
-# 13. 機器の設定
+# 14. 機器の設定
 
 ### aircon
 airconの名称をキーとした以下の設定により、自動的にエアコンを設定することが可能です。エアコン名「AC」の場合、「AC_in」と「AC_out」のノードが追加され、換気回路網には、inと「AC_in」、「AC_in」と「AC_out」、「AC_out」とoutを接続する回路が設定され、熱回路網には、setとoutを接続するエアコン回路が設定されます。inとoutを省略もしくはsetと同じノード名を設定することで、setのノードの温度制御が可能です。inとout、setを設定することにより、他室の温度制御など、自由に設定が可能です。
@@ -457,3 +457,48 @@ air_cleanerの名称をキーとした以下の設定により、空気清浄機
 |:--:|:--|:--:|:--:|
 |set|集塵する換気回路網の名|ネットワーク名の文字列|なし|
 |eta|除去効率 [-]|数値（リストでの設定も可）|なし|
+
+
+# 14. ライブラリ内のツール
+
+以下のツールが利用できる。詳細は、拡充していく予定。
+
+- vt.read_csv(filename)
+  - ファイル名filenameのcsvファイルを読み込みpd.DataFrameを返す。空欄は、自動で補完（後ろの値で補完した後、前の値で補完）、indexは自動的に時刻認識を行う。
+
+- vt.index(freq, length)
+  - freq('1s'、'1h'など)で設定された、ながさlengthのindexを作成する。はじめの時刻は、2022/1/1 00:00:00となる。
+
+- vt.read_json(filename)
+  - ファイル名filenameのjsonファイルを読み込みinputを返す。時刻は自動認識。
+
+- vt.read_hasp(filename)
+  - ファイル名filenameのhasp形式の気象データを読み込んで、pd.DataFrameを返す。
+
+- vt.write_json(input, filename)
+  - inputをファイル名filenameのjsonファイルに書き出す。
+
+- vt.to_json(input)
+  - inputをjson形式に変換する。
+
+- vt.run_calc(input)
+  - 計算を実行する。
+
+
+- lib.make_wind(d, s, c_in = 0.7, c_out = -0.55, c_horizontal = -0.90)
+  - 方位別の風圧係数を作成
+
+- lib.make_solar(**kwargs)
+  - 直散分離、方位別、壁、ガラス別の日射量を作成
+
+- lib.make_nocturnal(t, h)
+  - 夜間放射を作成
+
+- fan
+  - 送風ファンのPQ特性を格納
+
+- gnd
+  - 地盤の吸熱応答係数
+
+- mat
+  - 建築材料、壁面構成
