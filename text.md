@@ -467,7 +467,7 @@ air_cleanerの名称をキーとした以下の設定により、空気清浄機
   - ファイル名filenameのcsvファイルを読み込みpd.DataFrameを返す。空欄は、自動で補完（後ろの値で補完した後、前の値で補完）、indexは自動的に時刻認識を行う。
 
 - vt.index(freq, length)
-  - freq('1s'、'1h'など)で設定された、ながさlengthのindexを作成する。はじめの時刻は、2022/1/1 00:00:00となる。
+  - freq('1s'、'1h'など)で設定された、ながさlengthのindexを作成する。はじめの時刻は、2021/1/1 00:00:00となる。
 
 - vt.read_json(filename)
   - ファイル名filenameのjsonファイルを読み込みinputを返す。時刻は自動認識。
@@ -502,3 +502,92 @@ air_cleanerの名称をキーとした以下の設定により、空気清浄機
 
 - mat
   - 建築材料、壁面構成
+
+# 15. チュートリアル
+
+インストール（使いそうなライブラリも含む）
+```
+!pip install git+https://github.com/iguchi-lab/vtsim4
+from vtsim import vtsim as vt
+
+!pip install japanize-matplotlib
+import matplotlib.pyplot as plt
+import japanize_matplotlib
+
+import numpy as np
+import pandas as pd
+```
+
+２室の温度に関する計算例
+```
+input = {
+    'index': vt.index('1s', 1),
+    'solar':{
+        '日射_全天_H': 400.0
+    },
+    'sn': {
+        'Supply, Room1, Room2, Return':　{'t_flag': vt.SN_CALC},
+        'Outside':                       {'t_flag': vt.SN_FIX, 't':  0.0}
+    },
+    'vn': {
+        'Supply -> Room1 -> Return': {'vol': 500 / 3600},
+        'Supply -> Room2 -> Return': {'vol': 500 / 3600}
+    },
+    'tn': {
+        'Room1 -> Outside':       {'cdtc': 100 * 0.87},
+        'Room2 -> Outside':       {'cdtc': 200 * 0.87},
+        'Room2 -> 日射_全天_H':   {'ms': 1.0},
+    },
+    'aircon': {
+        'AC-01': {'out': 'Supply', 'set': 'Return', 
+                  'ac_mode': vt.AC_HEATING, 'vol': 1000 / 3600, 'pre_tmp': 20.0},
+        'AC-02': {'set': 'Room2', 'ac_mode': vt.AC_HEATING, 'pre_tmp': 20.0},
+    },
+    'heater': {
+        'heater-01':          {'output': 500.0, 'set': 'Room1'}
+    }
+}
+
+vt.run_calc(input)
+```
+
+粉塵に関する計算例
+```
+
+df_i = pd.DataFrame(index = vt.index('10s', 7200))
+df_i['m'] = 0
+df_i['k'] = 0
+df_i.loc['2021-01-01 00:10:00' : '2021-01-01 00:29:50', 'm'] = 28470
+
+beta = 1e-5       
+
+input = {
+    'index': df_i.index,
+    'sn': {
+        '外部':       {'c_flag': vt.SN_FIX,  'c': 0.0},
+        '空調室':     {'c_flag': vt.SN_CALC, 'c': 0.0, 'v':  13.66, 'beta': beta},
+        '建築ダクト': {'c_flag': vt.SN_CALC, 'c': 0.0, 'v':   6.00, 'beta': beta},
+        '寝室':       {'c_flag': vt.SN_CALC, 'c': 0.0, 'v':  40.25, 'beta': beta},
+        '子供部屋':   {'c_flag': vt.SN_CALC, 'c': 0.0, 'v': 126.49, 'beta': beta},
+        '和室':       {'c_flag': vt.SN_CALC, 'c': 0.0, 'v':  16.56, 'beta': beta},
+        '洗面所':     {'c_flag': vt.SN_CALC, 'c': 0.0, 'v':   9.94, 'beta': beta},
+        '吹抜':       {'c_flag': vt.SN_CALC, 'c': 0.0, 'v': 100.46, 'beta': beta}
+    },
+    'vn': {
+        '空調室 -> 建築ダクト':                     {'vol': 1206 / 3600},
+        '建築ダクト ->寝室 -> 吹抜 -> 空調室':      {'vol':  155 / 3600},
+        '建築ダクト -> 子供部屋 -> 吹抜 -> 空調室': {'vol':  313 / 3600},
+        '建築ダクト -> 和室 -> 吹抜 -> 空調室':     {'vol':  108 / 3600},
+        '建築ダクト -> 洗面所 -> 吹抜 ->空調室':    {'vol':  176 / 3600},
+        '建築ダクト -> 吹抜 -> 空調室':             {'vol':  454 / 3600},
+    }
+    'dust_source':{
+        'ds1': {'m': df_i['m'], 'set': '吹抜'}
+    },
+    'air_cleaner':{
+        'ac1': {'eta': df_i['k'], 'set': '空調室 -> 建築ダクト'}
+    }
+}
+
+vt.run_calc(input)
+```
