@@ -247,7 +247,9 @@ def direc_solar(s_ib, s_id, s_sin_hs, s_cos_hs, s_hs, s_sin_AZs, s_cos_AZs, s_AZ
 def make_solar(**kwargs):
     lat = kwargs['lat'] if 'lat' in kwargs else 36.00
     lon = kwargs['lon'] if 'lon' in kwargs else 140.00
-    td  = kwargs['td']  if 'td'  in kwargs else -0.5
+    td = (s_ig.index[1] - s_ig.index[0]).seconds + (s_ig.index[1] - s_ig.index[0]).microseconds / 1000000   #t_stepの読み込み
+    td = td * 3600    
+    #td  = kwargs['td']  if 'td'  in kwargs else -0.5
 
     if 's_ig' in kwargs:    
         s_ig = kwargs['s_ig']
@@ -310,3 +312,21 @@ def calc_PPD(Met = 1.0, W = 0.0, Clo = 1.0, t_a = 20, h_a = 50, t_r = 20, v_a = 
     PMV = calc_PMV(Met, W, Clo, t_a, h_a, t_r, v_a)
     PPD = 100 - 95 * math.exp(-0.03353 * math.pow(PMV, 4) - 0.2179 * math.pow(PMV, 2))
     return PPD
+
+############################################################################################################################
+#Fungal Index
+############################################################################################################################
+def calc_fungal_index(h, t):
+    a  = - 0.3
+    b  = 0.685
+    c1 = 0.95
+    c2 = 0.07
+    c3 = 25
+    c4 = 7.2 
+    
+    x = (h - c1) / c2
+    y = (t - c3) / c4
+
+    FI = 187.25 * np.exp((((x ** 2) - 2 * a * x * y + (y ** 2)) ** b) /(2 * (a ** 2) - 2)) - 8.25
+
+    return FI
