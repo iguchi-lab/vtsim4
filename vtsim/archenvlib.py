@@ -246,13 +246,13 @@ def direc_solar(s_ib, s_id, s_sin_hs, s_cos_hs, s_hs, s_sin_AZs, s_cos_AZs, s_AZ
 
 def make_solar(**kwargs):
     lat = kwargs['lat'] if 'lat' in kwargs else 36.00
-    lon = kwargs['lon'] if 'lon' in kwargs else 140.00
-    td = (s_ig.index[1] - s_ig.index[0]).seconds + (s_ig.index[1] - s_ig.index[0]).microseconds / 1000000   #t_stepの読み込み
-    td = td * 3600    
+    lon = kwargs['lon'] if 'lon' in kwargs else 140.00 
     #td  = kwargs['td']  if 'td'  in kwargs else -0.5
 
     if 's_ig' in kwargs:    
         s_ig = kwargs['s_ig']
+        td = (s_ig.index[1] - s_ig.index[0]).seconds + (s_ig.index[1] - s_ig.index[0]).microseconds / 1000000   #t_stepの読み込み
+        td = td * 3600    
         df_i = pd.concat([s_ig, sun_loc(s_ig.index, lat = lat, lon = lon, td = td)], axis = 1)
         df_i = pd.concat([df_i, sep_direct_diffuse(s_ig, df_i['hs'])], axis = 1)                                #直散分離結果の追加  
     else:
