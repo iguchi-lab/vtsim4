@@ -361,10 +361,10 @@ def set_wall(input):
         input['sn'][n1_is] = {'t_flag': vt.SN_CALC, 'area': area}
         input['sn'][n1_os] = {'t_flag': vt.SN_CALC, 'area': area}
 
-        #if 't' in input['sn'][n1]:
-        #    input['sn'][n1_is]['t'] =  input['sn'][n1]['t']
-        #if 't' in input['sn'][n2]:
-        #    input['sn'][n1_os]['t'] =  input['sn'][n2]['t']
+        if 't' in input['sn'][n1]:
+            input['sn'][n1_is]['t'] =  input['sn'][n1]['t']
+        if 't' in input['sn'][n2]:
+            input['sn'][n1_os]['t'] =  input['sn'][n2]['t']
 
         if 'capa_w' in wl:
             input['sn'][n1_is]['capa'] =  area * wl['capa_w'] / 2
@@ -398,10 +398,10 @@ def set_glass(input):
         input['sn'][n1_is] = {'t_flag': vt.SN_CALC, 'area': area}
         input['sn'][n1_os] = {'t_flag': vt.SN_CALC, 'area': area}
 
-        #if 't' in input['sn'][n1]:
-        #    input['sn'][n1_is]['t'] =  input['sn'][n1]['t']
-        #if 't' in input['sn'][n2]:
-        #    input['sn'][n1_os]['t'] =  input['sn'][n2]['t']
+        if 't' in input['sn'][n1]:
+            input['sn'][n1_is]['t'] =  input['sn'][n1]['t']
+        if 't' in input['sn'][n2]:
+            input['sn'][n1_os]['t'] =  input['sn'][n2]['t']
 
         input['tn'][n1    + ' -> ' + n1_is] = {'cdtc': area * alpha_1}
         input['tn'][n1_is + ' -> ' + n1_os] = {'cdtc': area * gl['U_w']}
