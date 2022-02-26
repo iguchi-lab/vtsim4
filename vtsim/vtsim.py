@@ -268,7 +268,7 @@ def set_outside_temp(input):
     for t in input['outside_temp']:
         tp = input['outside_temp'][t]
         for nn in name:
-            if nn in t: 
+            if nn == t: 
                 if nn not in input['sn']:   input['sn'][nn] = {}
                 input['sn'][nn] = {'t_flag': SN_FIX, 't': tp}
 
