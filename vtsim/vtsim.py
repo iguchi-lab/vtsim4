@@ -264,7 +264,7 @@ def set_wind_pressure(input):
 
 def set_outside_temp(input):
     logger.info('Set Outside Temp.')
-    name = ['外部', '外部_E', '外部_S', '外部_W', '外部_N', '外部_H', '地盤']
+    name = ['外部', '外部_E', '外部_S', '外部_W', '外部_N', '外部_H', '地盤', '地盤2', '地盤3']
 
     for t in input['outside_temp']:
         tp = input['outside_temp'][t]
