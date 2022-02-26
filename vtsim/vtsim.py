@@ -255,7 +255,7 @@ def set_wind_pressure(input):
         for nn in name:
             if nn in w: 
                 nnn = nn.replace('風圧', '外部')
-                if nnn in input['sn']:  input['sn'][nnn] = {}
+                if nnn not in input['sn']:  input['sn'][nnn] = {}
                 input['sn'][nnn]['v_flag'] = SN_FIX
                 input['sn'][nnn]['p']      =  wp
 
@@ -269,7 +269,7 @@ def set_outside_temp(input):
         tp = input['outside_temp'][t]
         for nn in name:
             if nn in t: 
-                if nn in input['sn']:   input['sn'][nn] = {}
+                if nn not in input['sn']:   input['sn'][nn] = {}
                 input['sn'][nn] = {'t_flag': SN_FIX, 't': tp}
 
     return input
