@@ -173,7 +173,6 @@ def run_calc(input):                                                            
     if 'outside_temp'  in input:    input = set_outside_temp(input)
     if 'solar'         in input:    input = set_solar(input)                                #日射量をセット
     if 'nocturnal'     in input:    input = set_nocturnal(input)                            #夜間放射をセット
-    #if 'isothermal'    in input:    input = set_isothrmal(input)
 
     if 'room'          in input:    input = set_room(input)
     if 'ground'        in input:    input = set_ground(input)
@@ -273,19 +272,6 @@ def set_outside_temp(input):
                 if nn in input['sn']:   input['sn'][nn] = {}
                 input['sn'][nn] = {'t_flag': SN_FIX, 't': tp}
 
-    return input
-
-def set_isothrmal(input):
-    logger.info('Set Isothermal')
-    name = ['地盤', '地盤2', '地盤3']
-
-    for i in input['isothermal']:
-        it = input['isothermal'][i]
-        for nn in name:
-            if nn in i:
-                if nn in input['sn']:   input['sn'][nn] = {}
-                input['sn'][nn] = {'t_flag': SN_FIX,  't': it}
-    
     return input
 
 def set_solar(input):
