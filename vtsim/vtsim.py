@@ -277,7 +277,7 @@ def set_outside_temp(input):
 
 def set_isothrmal(input):
     logger.info('Set Isothermal')
-    name = ['地盤']
+    name = ['地盤', '地盤2', '地盤3']
 
     for i in input['isothermal']:
         it = input['isothermal'][i]
