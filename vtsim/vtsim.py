@@ -355,8 +355,8 @@ def set_wall(input):
         n1_os = n1_os + '_w'
 
         area    = wl['area']
-        alpha_1 = wl['alpha_1'] if 'alpha_1' in wl else 9.0
-        alpha_2 = wl['alpha_2'] if 'alpha_2' in wl else 25.0
+        alpha_1 = wl['alpha_1'] if 'alpha_1' in wl else 4.4
+        alpha_2 = wl['alpha_2'] if 'alpha_2' in wl else 23                      #外部は、まだ夜間放射考慮していない値
 
         input['sn'][n1_is] = {'t_flag': vt.SN_CALC, 'area': area}
         input['sn'][n1_os] = {'t_flag': vt.SN_CALC, 'area': area}
