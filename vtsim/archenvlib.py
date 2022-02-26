@@ -252,7 +252,7 @@ def make_solar(**kwargs):
     if 's_ig' in kwargs:    
         s_ig = kwargs['s_ig']
         td = (s_ig.index[1] - s_ig.index[0]).seconds + (s_ig.index[1] - s_ig.index[0]).microseconds / 1000000   #t_stepの読み込み
-        td = td * 3600    
+        td = - td / 2 / 3600
         df_i = pd.concat([s_ig, sun_loc(s_ig.index, lat = lat, lon = lon, td = td)], axis = 1)
         df_i = pd.concat([df_i, sep_direct_diffuse(s_ig, df_i['hs'])], axis = 1)                                #直散分離結果の追加  
     else:
