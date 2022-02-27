@@ -302,7 +302,7 @@ def set_room(input):
         if 'ground' in rm:
             if 'ground' not in input:   input['ground'] = {}
             for g in rm['ground']:
-                print('set room ', g)
+                print('set room ', r + ' -> ' + g, ' ', gnd)
                 gnd = rm['ground'][g]
                 input['ground'][r + ' -> ' + g] = gnd
         if 'wall' in rm:
