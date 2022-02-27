@@ -304,9 +304,6 @@ def set_room(input):
             for g in rm['ground']:
                 gnd = rm['ground'][g]
                 input['ground'][r + ' -> ' + g] = gnd
-
-                print('set room ', r + ' -> ' + g, ' ', gnd)
-
         if 'wall' in rm:
             if 'wall' not in input:     input['wall'] = {}
             for w in rm['wall']:
@@ -331,6 +328,7 @@ def set_ground(input):
         print(area)
 
         input['sn'][n1_is] = {'t_flag': vt.SN_CALC, 'area': area}
+        if type(area) == list:  area = np.array(area)
         input['tn'][n1 +    ' -> ' + n1_is] = {'cdtc':  area / gnd['rg']}
         input['tn'][n1_is + ' -> ' + n2   ] = {'area':  area,         'phi_0':   gnd['phi_0'],
                                                'cof_r': gnd['cof_r'], 'cof_phi': gnd['cof_phi']}
