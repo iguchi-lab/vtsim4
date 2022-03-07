@@ -526,7 +526,7 @@ input = {
         '日射_全天_H': 400.0
     },
     'sn': {
-        'Supply, Room1, Room2, Return':　{'t_flag': vt.SN_CALC},
+        'Supply, Room1, Room2, Return':  {'t_flag': vt.SN_CALC},
         'Outside':                       {'t_flag': vt.SN_FIX, 't':  0.0}
     },
     'vn': {
@@ -579,7 +579,7 @@ input = {
         '建築ダクト -> 和室 -> 吹抜 -> 空調室':     {'vol':  108 / 3600},
         '建築ダクト -> 洗面所 -> 吹抜 ->空調室':    {'vol':  176 / 3600},
         '建築ダクト -> 吹抜 -> 空調室':             {'vol':  454 / 3600},
-    }
+    },
     'dust_source':{
         'ds1': {'m': df_i['m'], 'set': '吹抜'}
     },
