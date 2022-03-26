@@ -124,7 +124,7 @@ def Ib(IG, Id, alt):                                                            
     s_Ib = np.zeros(len(Id))
     for i, id in enumerate(Id):
         s_Ib[i] =  (IG[i] - Id[i]) / np.sin(np.radians(alt[i]))
-        if (alt[i] < 5.0) & (s_Ib[i] > 0.1):  s_Ib[i] = 0.1
+        if (alt[i] < 10.0) & (s_Ib[i] > IG[i]):  s_Ib[i] = IG[i]
     return s_Ib
 
 #太陽位置の計算
@@ -201,7 +201,7 @@ def sep_direct_diffuse(s_ig, s_hs):
     
     df_i['Kt'] = Kt(Wh_to_MJ(df_i['IG']), df_i['hs'])
     df_i['Id'] = MJ_to_Wh(Id(Wh_to_MJ(df_i['IG']), df_i['Kt']))
-    df_i['Ib'] = MJ_to_Wh(Ib(Wh_to_MJ(df_i['IG']), Wh_to_MJ(df_i['Id']), df_i['hs']))   
+    df_i['Ib'] = MJ_to_Wh(Ib(Wh_to_MJ(df_i['IG']), Wh_to_MJ(df_i['Id']), df_i['hs'])) 
     return df_i[['Kt', 'Id', 'Ib']]
 
 def direc_solar(s_ib, s_id, s_sin_hs, s_cos_hs, s_hs, s_sin_AZs, s_cos_AZs, s_AZs):
