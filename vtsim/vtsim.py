@@ -143,6 +143,7 @@ def to_json(input):                                                             
     return(json.dumps(input, default = encode, ensure_ascii = False, indent = 4))                       
 
 def to_list_f(v):
+    print(type(v))
     if   type(v) == list:                   return(v)
     elif type(v) == np.ndarray:             return(v)
     elif type(v) == pd.core.series.Series:  return(np.array(v))
@@ -582,7 +583,8 @@ def set_vent_net(vn):
 
             calc.vn_add(i, n1n2, calc.node[n1], calc.node[n2], vn_type, h1, h2)
             
-            if vn_type == vt.VN_FIX:       
+            if vn_type == vt.VN_FIX:
+                print('set vol 220508')       
                 calc.vn[i].qv = to_list_f(vn[nt]['vol'])                                    #風量固定値、行列で設定可能
             if vn_type == vt.VN_AIRCON:
                 calc.vn[i].qv = to_list_f(vn[nt]['ac_vol'])                                 #風量固定値、行列で設定可能
