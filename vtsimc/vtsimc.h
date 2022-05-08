@@ -262,7 +262,8 @@ public:
         for(unsigned int i = 0; i < vn.size(); i++){    
             double rgh1 = get_rho(sn[vn[i].i1].t[ts2]) * G * vn[i].h1[ts2];
             double rgh2 = get_rho(sn[vn[i].i2].t[ts2]) * G * vn[i].h2[ts2];
-            vn[i].qv[ts1] = vn[i].get_qv((sn[vn[i].i1].p[ts2] - rgh1) - (sn[vn[i].i2].p[ts2] - rgh2), ts2);             //風量の計算
+            if(vn[i].vn_type != VN_FIX)
+                vn[i].qv[ts1] = vn[i].get_qv((sn[vn[i].i1].p[ts2] - rgh1) - (sn[vn[i].i2].p[ts2] - rgh2), ts2);             //風量の計算
         }
     }
 
@@ -313,7 +314,7 @@ public:
         }
         for(unsigned int i = 0; i < vn.size(); i++){
             LOG_PRINT("vn[" << i << "] = " << vn[i].vn_type << " (" << vn[i].i1 << "," << vn[i].i2  << ") " << vn[i].h1[0] << " - " << vn[i].h2[0]);
-            LOG_CONTENTS(", qv[0]=" << vn[i].qv[0] << ",qt[0]=" << vn[i].qt[0]); 
+            LOG_CONTENTS(", qv[0]=" << vn[i].qv[0] << ", qv[1]=" << vn[i].qv[1] << ", qt[0]=" << vn[i].qt[0] << ", qt[1]=" << vn[i].qt[1]); 
             if(vn[i].alpha.size() != 0) LOG_CONTENTS(", alpha[0]=" << vn[i].alpha[0]);
             if(vn[i].area.size()  != 0) LOG_CONTENTS(", area[0]="  << vn[i].area[0]);
             if(vn[i].a.size()     != 0) LOG_CONTENTS(", a[0]="     << vn[i].a[0]);
