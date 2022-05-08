@@ -143,7 +143,6 @@ def to_json(input):                                                             
     return(json.dumps(input, default = encode, ensure_ascii = False, indent = 4))                       
 
 def to_list_f(v):
-    print(type(v))
     if   type(v) == list:                   return(v)
     elif type(v) == np.ndarray:             return(v)
     elif type(v) == pd.core.series.Series:  return(np.array(v))
