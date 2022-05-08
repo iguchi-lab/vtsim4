@@ -31,19 +31,28 @@ tuple<vector<vector<double>>, vector<double>> pivoting(vector<vector<double>> a,
 vector<double> LU(vector<vector<double>> a, vector<double> b, long size){
     vector<double> x(size, 0.0), y(size, 0.0);
     tie(a, b) = pivoting(a, b, size);
+    LOG_PRINT("a :");
     for (int pivot = 0; pivot < size - 1; pivot++){
         for (int row = pivot + 1; row < size; row++){
             double s = a[row][pivot] / a[pivot][pivot];
-            for (int col = pivot; col < size; col++) a[row][col] -= a[pivot][col] * s;          // これが 上三角行列
+            
+            for (int col = pivot; col < size; col++){ 
+                a[row][col] -= a[pivot][col] * s;          // これが 上三角行列
+                LOG_CONTENTS("c_a[" << row << "][" << col << "] = " << a[row][col] <<  ", ");
+            }
             a[row][pivot] = s;                                                                  // これが 下三角行列
+            LOG_CONTENTS("p_a[" << row << "][" << pivot << "] = " << a[row][pivot] <<  ", ");
         }
     }
+    LOG_CONTENTS(endl);
+
     for (int row = 0; row < size; row++){
-        for (int col = 0; col < row; col++) b[row] -= a[row][col] * y[col];
+        for (int col = 0; col < row; col++)         b[row] -= a[row][col] * y[col];
         y[row] = b[row];
     }
+
     for (int row = size - 1; row >= 0; row--){
-        for (int col = size - 1; col > row; col--) y[row] -= a[row][col] * x[col];
+        for (int col = size - 1; col > row; col--)  y[row] -= a[row][col] * x[col];
         x[row] = y[row] / a[row][row];
     }
     return x;
