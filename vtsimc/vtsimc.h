@@ -361,7 +361,7 @@ public:
             if(v_idc.size() > 0){
                 //for(unsigned int i = 0; i < sn.size(); i++)                                                       
                 //    if(get<0>(sn[i].flag) == SN_CALC)   sn[i].p[ts] = sn[i].p[ts - 1];                            //ここを実行すると、連続して換気回路網計算した際にケタ落ちエラー
-                //calc_qv(ts, ts - 1);
+                calc_qv(ts, ts - 1);
             }
 
             if(t_idc.size() > 0){    
