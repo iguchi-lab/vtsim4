@@ -2,7 +2,6 @@
 #include "node.h"                   //ノード　ヘッダーファイルの読み込み
 #include "vent_net.h"               //換気回路網　ヘッダーファイルの読み込み
 #include "thrm_net.h"               //熱回路網　ヘッダーファイルの読み込み
-
 #include <iostream>
 #include <fstream>
 
@@ -133,42 +132,25 @@ public:
         do{
             rmse = 0.0;
             qvsum_0 = qv_sum(p0, ts);
-            //
-            for(unsigned int i = 0; i < v_idc.size(); i++){   
-                LOG_PRINT(itr << "pre: qvsum[" << i << "] = " << qvsum_0[i] << ", p: " << p0[i] << endl);
-            }       
-            //
-            LOG_PRINT("a:");
+
             for(unsigned int j = 0; j < v_idc.size(); j++){
                 p0[v_idc[j]] += sts.step_p;                                                                             //ダミー圧力の作成       
                 qvsum_d = qv_sum(p0, ts);                                                                            //ダ三－風量収支の計算
-                for(unsigned int i = 0; i < v_idc.size(); i++){  
-                    a[i][j] = (qvsum_d[v_idc[i]] - qvsum_0[v_idc[i]]) / sts.step_p;  //aの計算
-                    LOG_CONTENTS("a[" << i << "][" << j << "] =" << setprecision(16) <<a[i][j] << ", ");
-                }
+                for(unsigned int i = 0; i < v_idc.size(); i++)  a[i][j] = (qvsum_d[v_idc[i]] - qvsum_0[v_idc[i]]) / sts.step_p;  //aの計算
                 b[j] = -qvsum_0[v_idc[j]];
                 p0[v_idc[j]] -= sts.step_p;
             }
-            LOG_CONTENTS(endl);
-            //
-            LOG_PRINT("b:");
-            for(unsigned int i = 0; i < v_idc.size(); i++)
-                LOG_CONTENTS("b[" << i << "] =" << setprecision(16) <<b[i] << ", ");
-            LOG_CONTENTS(endl);
-            //
 
             if(sts.solve == SOLVE_SOR)  dp = SOR(a, b, v_idc.size(), sts.sor_ratio, sts.sor_err);                       //SOR法による計算     
             else                        dp = LU(a, b, v_idc.size()); 
 
             for(unsigned int i = 0; i < v_idc.size(); i++)   p0[v_idc[i]] += dp[i];                                     //圧力の更新
             qvsum_0 = qv_sum(p0, ts);    
-            for(unsigned int i = 0; i < v_idc.size(); i++){   
-                rmse += pow(qvsum_0[v_idc[i]], 2.0) / v_idc.size();
-                LOG_PRINT(itr << "post: qvsum[" << i << "] = " << qvsum_0[i] << ", p: " << p0[i] << endl);
-            }
-            LOG_PRINT(itr << ": ts = " << ts << ": rmse = " << sqrt(rmse) << endl);
+            for(unsigned int i = 0; i < v_idc.size(); i++)  rmse += pow(qvsum_0[v_idc[i]], 2.0) / v_idc.size();
+            
             itr++;
         }while(sts.vent_err < sqrt(rmse));
+
         for(unsigned int i = 0; i < v_idc.size(); i++)   sn[v_idc[i]].p[ts] = p0[v_idc[i]];                             //圧力の計算                                                               
         return rmse;
     }
@@ -377,8 +359,8 @@ public:
 
         for(long ts = 1; ts < sts.length; ts++){
             if(v_idc.size() > 0){
-                //for(unsigned int i = 0; i < sn.size(); i++)
-                //    if(get<0>(sn[i].flag) == SN_CALC)   sn[i].p[ts] = sn[i].p[ts - 1];
+                //for(unsigned int i = 0; i < sn.size(); i++)                                                       
+                //    if(get<0>(sn[i].flag) == SN_CALC)   sn[i].p[ts] = sn[i].p[ts - 1];                            //ここを実行すると、連続して換気回路網計算した際にケタ落ちエラー
                 //calc_qv(ts, ts - 1);
             }
 
