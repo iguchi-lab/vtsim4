@@ -23,6 +23,7 @@ from datetime import datetime
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
+'''
 # コンソールに出力するハンドラの設定
 sh = logging.StreamHandler()
 sh.setLevel(logging.INFO)
@@ -40,6 +41,7 @@ formatter = logging.Formatter(
 
 formatter.converter = customTime
 sh.setFormatter(formatter)
+'''
 
 ###############################################################################
 # define const
