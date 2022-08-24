@@ -584,8 +584,7 @@ def set_vent_net(vn):
 
             calc.vn_add(i, n1n2, calc.node[n1], calc.node[n2], vn_type, h1, h2)
             
-            if vn_type == vt.VN_FIX:
-                print('set vol 220508')       
+            if vn_type == vt.VN_FIX:   
                 calc.vn[i].qv = to_list_f(vn[nt]['vol'])                                    #風量固定値、行列で設定可能
             if vn_type == vt.VN_AIRCON:
                 calc.vn[i].qv = to_list_f(vn[nt]['ac_vol'])                                 #風量固定値、行列で設定可能
