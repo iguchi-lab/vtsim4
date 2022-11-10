@@ -40,6 +40,11 @@ fs.set_spec('RARA2',    210 / 3600, 120.0,   0 / 3600, 120.0)
 
 fs.set_spec('SUMIKA', 200 / 3600, 100.0, 200 / 3600, 100.0)
 
+fs.set_spec('AEROTHECH_50Hz', 1850 / 3600, 440.0, 1640 / 3600, 100.0)
+fs.set_spec('AEROTHECH_40Hz', 1550 / 3600, 340.0, 1640 / 3600, 100.0)
+fs.set_spec('AEROTHECH_25Hz', 1150 / 3600, 300.0, 1640 / 3600, 100.0)
+fs.set_spec('AEROTHECH_10Hz',  400 / 3600,  80.0, 1640 / 3600, 100.0)
+
 #旧バージョン
 #YCC Fan Spec
 qmax_YCC_L, pmax_YCC_L, q1_YCC_L, p1_YCC_L = 100 / 3600, 110.0, 100 / 3600,  95.0
