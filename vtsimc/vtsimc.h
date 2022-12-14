@@ -145,9 +145,10 @@ public:
             else                        dp = LU(a, b, v_idc.size()); 
 
             for(unsigned int i = 0; i < v_idc.size(); i++)   p0[v_idc[i]] += dp[i];                                     //圧力の更新
-            qvsum_0 = qv_sum(p0, ts);    
-            for(unsigned int i = 0; i < v_idc.size(); i++)  rmse += pow(qvsum_0[v_idc[i]], 2.0) / v_idc.size();
+            qvsum_0 = qv_sum(p0, ts);
             
+            for(unsigned int i = 0; i < v_idc.size(); i++)  rmse += pow(qvsum_0[v_idc[i]], 2.0) / v_idc.size();
+            LOG_PRINT(itr << ": ts = " << ts << ": rmse = " << sqrt(rmse) << endl);
             itr++;
         }while(sts.vent_err < sqrt(rmse));
 
