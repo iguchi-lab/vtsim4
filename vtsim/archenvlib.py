@@ -266,7 +266,7 @@ def make_solar(**kwargs):
         if 'td' in kwargs:
             td = kwargs['td']
         else:
-            td = (s_ig.index[1] - s_ig.index[0]).seconds + (s_ig.index[1] - s_ig.index[0]).microseconds / 1000000   #t_stepの読み込み
+            td = (s_ib.index[1] - s_ib.index[0]).seconds + (s_ib.index[1] - s_ib.index[0]).microseconds / 1000000   #t_stepの読み込み
             td = - td / 2 / 3600
         df_i = pd.concat([s_ib, s_id, sun_loc(s_ib.index, lat = lat, lon = lon, td = td)], axis = 1)  
 
