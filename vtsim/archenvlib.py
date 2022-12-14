@@ -263,6 +263,11 @@ def make_solar(**kwargs):
         else:                   raise Exception('ERROR: 水平面拡散日射量 s_ig がありません。法線面直達日射量 s_ib もありません。')
         if 's_id' in kwargs:    s_id = kwargs['s_id']
         else:                   raise Exception('ERROR: 水平面拡散日射量 s_ig がありません。全天日射量 s_id もありません。')
+        if 'td' in kwargs:
+            td = kwargs['td']
+        else:
+            td = (s_ig.index[1] - s_ig.index[0]).seconds + (s_ig.index[1] - s_ig.index[0]).microseconds / 1000000   #t_stepの読み込み
+            td = - td / 2 / 3600
         df_i = pd.concat([s_ib, s_id, sun_loc(s_ib.index, lat = lat, lon = lon, td = td)], axis = 1)  
 
     df_i = direc_solar(df_i['Ib'], df_i['Id'],                                                              #方位別日射量の追加
