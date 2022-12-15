@@ -246,7 +246,7 @@ def set_calc_status(input):
     if 'sor_ratio' in calc_sts:   sts.sor_ratio = calc_sts['sor_ratio']
     if 'sor_err'   in calc_sts:   sts.sor_err   = calc_sts['sor_err']
 
-    print(sts)
+    logger.info(sts)
         
     calc.setup(sts)
 
