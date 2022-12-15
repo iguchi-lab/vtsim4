@@ -5,7 +5,7 @@
 #include <iostream>
 #include <fstream>
 
-#define DEBUG_ON
+//#define DEBUG_ON
 
 #ifdef  DEBUG_ON
 #define LOG_PRINT(...)     ofs << __FILE__ << " (" << __LINE__ << ") " << __func__ << ":" << __VA_ARGS__
@@ -360,8 +360,8 @@ public:
 
         for(long ts = 1; ts < sts.length; ts++){
             if(v_idc.size() > 0){
-                //for(unsigned int i = 0; i < sn.size(); i++)                                                       
-                //    if(get<0>(sn[i].flag) == SN_CALC)   sn[i].p[ts] = sn[i].p[ts - 1];                            //ここを実行すると、連続して換気回路網計算した際にケタ落ちエラー
+                for(unsigned int i = 0; i < sn.size(); i++)                                                       
+                    if(get<0>(sn[i].flag) == SN_CALC)   sn[i].p[ts] = sn[i].p[ts - 1];                            //ここを実行すると、連続して換気回路網計算した際にケタ落ちエラー
                 calc_qv(ts, ts - 1);
             }
 
